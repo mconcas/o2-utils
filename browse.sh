@@ -7,7 +7,10 @@ else
  evt=$1
 fi
 
-pushd ~/alice/data/000vtx-alien/
-root -l BrowseVertexer.C++ 
+export ALIBUILD_WORK_DIR="/home/alidock/alice/sw"
+eval $(alienv load O2/latest 2> /dev/null)
+
+# pushd ~/alice/data/000vtx-alien/
+root -l /home/alidock/util/VertexerDataBrowser.C++
 echo test returned $?
-popd
+# popd
