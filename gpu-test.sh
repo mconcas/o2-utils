@@ -4,7 +4,12 @@ if [[ -z "$1" ]];
 then
   mcvalid=
 else
-  mcvalid=true
+  if [[ "$1" == "true" || "$1" == "false" ]];
+  then
+    mcvalid=$1
+  else
+    exit 666
+  fi
   if [[ -z "$2" ]];
   then
     evt=
