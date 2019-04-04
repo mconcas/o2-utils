@@ -1,15 +1,9 @@
-#! /usr/bin/bash -ex
-
-if [[ -z "$1" ]];
- then
- evt=
-else
- evt=$1
-fi
+#! /usr/bin/bash -e
 
 export ALIBUILD_WORK_DIR="/home/alidock/alice/sw"
 eval $(alienv load O2/latest 2> /dev/null)
 
 pushd ~/alice/data/000vtx-alien/
-root -l -q run_test_vert_ca_its.C+\($evt\)
+root -l -q run_primary_vertexer_ITS.C++\("${1:-false},${2:-false},${3:--1},${4:-1}"\)
+echo test returned $?
 popd
