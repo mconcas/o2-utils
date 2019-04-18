@@ -10,6 +10,7 @@
 #include "TH2F.h"
 #include "TLeaf.h"
 #include "TNtuple.h"
+#include "TPaveStats.h"
 
 void VertexerDataBrowser(
     const std::string fileNameResults, /*, const std::string fileNameData*/
@@ -64,9 +65,9 @@ void VertexerDataBrowser(
   TH1F *histClus2Phi =
       new TH1F("hCl2phi", "Clusters Layer 2 Phi", 200, 0.f, 6.3f);
   TH1F *histComb01TanLambda =
-      new TH1F("hComb01tlambda", "Comb01 tanLambda", 100, -100.f, 100.f);
+      new TH1F("hComb01tlambda", "Comb01 tanLambda", 100, -65.f, 65.f);
   TH1F *histComb12TanLambda =
-      new TH1F("hComb12tlambda", "Comb12 tanLambda", 100, -100.f, 100.f);
+      new TH1F("hComb12tlambda", "Comb12 tanLambda", 100, -65.f, 65.f);
   TH2F *histDelta01Phi1 = new TH2F("hDelta01Phi1", "DeltaPhi 01 vs Phi1", 100,
                                    0.f, 6.29f, 200, -1.f, 1.f);
   TH2F *histDelta12Phi1 = new TH2F("hDelta12Phi1", "DeltaPhi 12 vs Phi1", 100,
@@ -97,6 +98,8 @@ void VertexerDataBrowser(
 
   TH1F *histComb01Phi_ref{NULL};
   TH1F *histComb12Phi_ref{NULL};
+  TH1F *histComb01Phi_diff{NULL};
+  TH1F *histComb12Phi_diff{NULL};
 
   TH1F *histClus0Phi_ref{NULL};
   TH1F *histClus1Phi_ref{NULL};
@@ -108,19 +111,34 @@ void VertexerDataBrowser(
 
   TH1F *histComb01TanLambda_ref{NULL};
   TH1F *histComb12TanLambda_ref{NULL};
+  TH1F *histComb01TanLambda_diff{NULL};
+  TH1F *histComb12TanLambda_diff{NULL};
+
+  TH1F *histPhi01_ref{NULL};
+  TH1F *histPhi12_ref{NULL};
+  TH1F *histPhi01_diff{NULL};
+  TH1F *histPhi12_diff{NULL};
 
   TH2F *histDelta01Phi1_ref{NULL};
   TH2F *histDelta12Phi1_ref{NULL};
+
   TH2F *histPhi0VsPhi1_ref{NULL};
   TH2F *histPhi1VsPhi2_ref{NULL};
-  TH1F *histPhi01_ref{NULL};
-  TH1F *histPhi12_ref{NULL};
+
   TH1F *histOrigX_ref{NULL};
   TH1F *histOrigY_ref{NULL};
   TH1F *histOrigZ_ref{NULL};
   TH1F *histCosDir1_ref{NULL};
   TH1F *histCosDir2_ref{NULL};
   TH1F *histCosDir3_ref{NULL};
+
+  TH1F *histOrigX_diff{NULL};
+  TH1F *histOrigY_diff{NULL};
+  TH1F *histOrigZ_diff{NULL};
+  TH1F *histCosDir1_diff{NULL};
+  TH1F *histCosDir2_diff{NULL};
+  TH1F *histCosDir3_diff{NULL};
+
   TH2F *histClusTanLambda_ref{NULL};
 
   // Comparison data
@@ -136,9 +154,9 @@ void VertexerDataBrowser(
     histClus2Phi_ref =
         new TH1F("hCl2phiRef", "Clusters Layer 2 Phi", 200, 0.f, 6.3f);
     histComb01TanLambda_ref =
-        new TH1F("hComb01tlambdaRef", "Comb01 tanLambda", 100, -100.f, 100.f);
+        new TH1F("hComb01tlambdaRef", "Comb01 tanLambda", 100, -65.f, 65.f);
     histComb12TanLambda_ref =
-        new TH1F("hComb12tlambdaRef", "Comb12 tanLambda", 100, -100.f, 100.f);
+        new TH1F("hComb12tlambdaRef", "Comb12 tanLambda", 100, -65.f, 65.f);
     histDelta01Phi1_ref = new TH2F("hDelta01Phi1Ref", "DeltaPhi 01 vs Phi1",
                                    100, 0.f, 6.29f, 200, -1.f, 1.f);
     histDelta12Phi1_ref = new TH2F("hDelta12Phi1Ref", "DeltaPhi 12 vs Phi1",
@@ -310,6 +328,7 @@ void VertexerDataBrowser(
   canvasPolar->cd(3);
   histClus2Phi->Draw();
 
+  // Comparison data
   if (compare) {
     TGraphPolar *grP01Ref = new TGraphPolar(npoints, r01Ref, phiArr01Ref);
     TGraphPolar *grP12Ref = new TGraphPolar(npoints, r12Ref, phiArr12Ref);
@@ -336,41 +355,100 @@ void VertexerDataBrowser(
     canvasPolar->cd(3);
     histClus2Phi_ref->Draw("same");
 
+    // Diff histos
     histClus0Phi_diff = (TH1F *)histClus0Phi_ref->Clone("hCl0phiDiff");
     histClus0Phi_diff->Add(histClus0Phi, -1);
     histClus0Phi_diff->SetDirectory(0);
     histClus0Phi_diff->SetFillStyle(3001);
     histClus0Phi_diff->SetFillColor(kBlue);
     canvasPolar->cd(1);
-    histClus0Phi_diff->Draw("same");
+    // TPaveStats* ps0 = (TPaveStats*) histClus0Phi_diff->FindObject("stats");
+    histClus0Phi_diff->Draw("sames");
     histClus1Phi_diff = (TH1F *)histClus1Phi_ref->Clone("hCl0phiDiff");
     histClus1Phi_diff->Add(histClus1Phi, -1);
     histClus1Phi_diff->SetDirectory(0);
     histClus1Phi_diff->SetFillStyle(3001);
     histClus1Phi_diff->SetFillColor(kBlue);
     canvasPolar->cd(2);
-    histClus1Phi_diff->Draw("same");
+    // TPaveStats* ps1 = (TPaveStats*) histClus1Phi_diff->FindObject("stats");
+    histClus1Phi_diff->Draw("sames");
     histClus2Phi_diff = (TH1F *)histClus2Phi_ref->Clone("hCl0phiDiff");
     histClus2Phi_diff->Add(histClus2Phi, -1);
     histClus2Phi_diff->SetDirectory(0);
     histClus2Phi_diff->SetFillStyle(3001);
     histClus2Phi_diff->SetFillColor(kBlue);
     canvasPolar->cd(3);
-    histClus2Phi_diff->Draw("same");
+    // TPaveStats* ps2 = (TPaveStats*) histClus2Phi_diff->FindObject("stats");
+    histClus2Phi_diff->Draw("sames");
   }
 
+  // Lines
   histComb01Phi->SetDirectory(0);
+  histComb01Phi->SetLineColor(kOrange + 8);
   canvasTracklets->cd(1);
   histComb01Phi->Draw();
   histComb12Phi->SetDirectory(0);
+  histComb12Phi->SetLineColor(kOrange + 8);
   canvasTracklets->cd(2);
   histComb12Phi->Draw();
   histComb01TanLambda->SetDirectory(0);
+  histComb01TanLambda->SetLineColor(kOrange + 8);
   canvasTracklets->cd(3)->SetLogy();
   histComb01TanLambda->Draw();
   histComb12TanLambda->SetDirectory(0);
+  histComb12TanLambda->SetLineColor(kOrange + 8);
   canvasTracklets->cd(4)->SetLogy();
   histComb12TanLambda->Draw();
+
+  if (compare) {
+    histComb01Phi_ref->SetDirectory(0);
+    histComb01Phi_ref->SetLineColor(kBlue + 2);
+    canvasTracklets->cd(1);
+    histComb01Phi_ref->Draw("sames");
+    histComb12Phi_ref->SetDirectory(0);
+    histComb12Phi_ref->SetLineColor(kBlue + 2);
+    canvasTracklets->cd(2);
+    histComb12Phi_ref->Draw("sames");
+    histComb01TanLambda_ref->SetDirectory(0);
+    histComb01TanLambda_ref->SetLineColor(kBlue + 2);
+    canvasTracklets->cd(3)->SetLogy();
+    histComb01TanLambda_ref->Draw("sames");
+    histComb12TanLambda_ref->SetDirectory(0);
+    histComb12TanLambda_ref->SetLineColor(kBlue + 2);
+    canvasTracklets->cd(4)->SetLogy();
+    histComb12TanLambda_ref->Draw("sames");
+
+    histComb01Phi_diff = (TH1F *)histComb01Phi_ref->Clone("hComb01phiDiff");
+    histComb01Phi_diff->Add(histComb01Phi, -1);
+    histComb01Phi_diff->SetDirectory(0);
+    histComb01Phi_diff->SetFillStyle(3001);
+    histComb01Phi_diff->SetFillColor(kBlue);
+    canvasTracklets->cd(1);
+    histComb01Phi_diff->Draw("sames");
+    histComb12Phi_diff = (TH1F *)histComb12Phi_ref->Clone("hComb12phiDiff");
+    histComb12Phi_diff->Add(histComb12Phi, -1);
+    histComb12Phi_diff->SetDirectory(0);
+    histComb12Phi_diff->SetFillStyle(3001);
+    histComb12Phi_diff->SetFillColor(kBlue);
+    canvasTracklets->cd(2);
+    histComb12Phi_diff->Draw("sames");
+    histComb01TanLambda_diff =
+        (TH1F *)histComb01TanLambda_ref->Clone("hComb01tlambdaDiff");
+    histComb01TanLambda_diff->Add(histComb01TanLambda, -1);
+    histComb01TanLambda_diff->SetDirectory(0);
+    histComb01TanLambda_diff->SetFillStyle(3001);
+    histComb01TanLambda_diff->SetFillColor(kBlue);
+    canvasTracklets->cd(3);
+    histComb01TanLambda_diff->Draw("sames");
+    histComb12TanLambda_diff =
+        (TH1F *)histComb12TanLambda_ref->Clone("hComb12tlambdaDiff");
+    histComb12TanLambda_diff->Add(histComb12TanLambda, -1);
+    histComb12TanLambda_diff->SetDirectory(0);
+    histComb12TanLambda_diff->SetFillStyle(3001);
+    histComb12TanLambda_diff->SetFillColor(kBlue);
+    canvasTracklets->cd(4);
+    histComb12TanLambda_diff->Draw("sames");
+  }
 
   // Phi Clusters block
   histDelta01Phi1->SetDirectory(0);
@@ -386,31 +464,127 @@ void VertexerDataBrowser(
   canvasClusters->cd(4);
   histPhi1VsPhi2->Draw("colz");
   histPhi01->SetDirectory(0);
-  canvasClusters->cd(5);
+  histPhi01->SetLineColor(kOrange + 8);
+  histPhi01->SetMinimum(0.0001);
+  canvasClusters->cd(5)->SetLogy();
   histPhi01->Draw();
   histPhi12->SetDirectory(0);
-  canvasClusters->cd(6);
+  histPhi12->SetLineColor(kOrange + 8);
+  histPhi12->SetMinimum(0.0001);
+  canvasClusters->cd(6)->SetLogy();
   histPhi12->Draw();
+
+  // Comparison data
+  histPhi01_ref->SetDirectory(0);
+  canvasClusters->cd(5);
+  histPhi01_ref->Draw("sames");
+  histPhi12_ref->SetDirectory(0);
+  canvasClusters->cd(6);
+  histPhi12_ref->Draw("sames");
+
+  histPhi01_diff = (TH1F *)histPhi01_ref->Clone("hPhi01Diff");
+  histPhi01_diff->Add(histPhi01, -1);
+  histPhi01_diff->SetDirectory(0);
+  histPhi01_diff->SetFillStyle(3001);
+  histPhi01_diff->SetFillColor(kBlue);
+  canvasClusters->cd(5);
+  histPhi01_diff->Draw("sames");
+
+  histPhi12_diff = (TH1F *)histPhi12_ref->Clone("hPhi12Diff");
+  histPhi12_diff->Add(histPhi12, -1);
+  histPhi12_diff->SetDirectory(0);
+  histPhi12_diff->SetFillStyle(3001);
+  histPhi12_diff->SetFillColor(kBlue);
+  canvasClusters->cd(6);
+  histPhi12_diff->Draw("sames");
 
   // Lines block
   histOrigX->SetDirectory(0);
-  canvasLines->cd(1);
+  canvasLines->cd(1)->SetLogy();
+  histOrigX->SetLineColor(kOrange + 8);
   histOrigX->Draw();
   histOrigY->SetDirectory(0);
-  canvasLines->cd(2);
+  canvasLines->cd(2)->SetLogy();
+  histOrigY->SetLineColor(kOrange + 8);
   histOrigY->Draw();
   histOrigZ->SetDirectory(0);
-  canvasLines->cd(3);
+  canvasLines->cd(3)->SetLogy();
+  histOrigZ->SetLineColor(kOrange + 8);
   histOrigZ->Draw();
   histCosDir1->SetDirectory(0);
-  canvasLines->cd(4);
+  canvasLines->cd(4)->SetLogy();
+  histCosDir1->SetLineColor(kOrange + 8);
   histCosDir1->Draw();
   histCosDir2->SetDirectory(0);
-  canvasLines->cd(5);
+  canvasLines->cd(5)->SetLogy();
+  histCosDir2->SetLineColor(kOrange + 8);
   histCosDir2->Draw();
   histCosDir3->SetDirectory(0);
-  canvasLines->cd(6);
+  canvasLines->cd(6)->SetLogy();
+  histCosDir3->SetLineColor(kOrange + 8);
   histCosDir3->Draw();
+
+  histOrigX_ref->SetDirectory(0);
+  canvasLines->cd(1);
+  histOrigX_ref->Draw("same");
+  histOrigY_ref->SetDirectory(0);
+  canvasLines->cd(2);
+  histOrigY_ref->Draw("same");
+  histOrigZ_ref->SetDirectory(0);
+  canvasLines->cd(3);
+  histOrigZ_ref->Draw("same");
+  histCosDir1_ref->SetDirectory(0);
+  canvasLines->cd(4);
+  histCosDir1_ref->Draw("same");
+  histCosDir2_ref->SetDirectory(0);
+  canvasLines->cd(5);
+  histCosDir2_ref->Draw("same");
+  histCosDir3_ref->SetDirectory(0);
+  canvasLines->cd(6);
+  histCosDir3_ref->Draw("same");
+
+  histOrigX_diff = (TH1F *)histOrigX_ref->Clone("hOrigXDiff");
+  histOrigX_diff->Add(histOrigX, -1);
+  histOrigX_diff->SetDirectory(0);
+  histOrigX_diff->SetFillStyle(3001);
+  histOrigX_diff->SetFillColor(kBlue);
+  canvasLines->cd(1);
+  histOrigX_diff->Draw("sames");
+  histOrigY_diff = (TH1F *)histOrigY_ref->Clone("hOrigYDiff");
+  histOrigY_diff->Add(histOrigY, -1);
+  histOrigY_diff->SetDirectory(0);
+  histOrigY_diff->SetFillStyle(3001);
+  histOrigY_diff->SetFillColor(kBlue);
+  canvasLines->cd(2);
+  histOrigY_diff->Draw("sames");
+  histOrigZ_diff = (TH1F *)histOrigZ_ref->Clone("hOrigZDiff");
+  histOrigZ_diff->Add(histOrigZ, -1);
+  histOrigZ_diff->SetDirectory(0);
+  histOrigZ_diff->SetFillStyle(3001);
+  histOrigZ_diff->SetFillColor(kBlue);
+  canvasLines->cd(3);
+  histOrigZ_diff->Draw("sames");
+  histCosDir1_diff = (TH1F *)histCosDir1_ref->Clone("hCosDir1Diff");
+  histCosDir1_diff->Add(histCosDir1, -1);
+  histCosDir1_diff->SetDirectory(0);
+  histCosDir1_diff->SetFillStyle(3001);
+  histCosDir1_diff->SetFillColor(kBlue);
+  canvasLines->cd(4);
+  histCosDir1_diff->Draw("sames");
+  histCosDir2_diff = (TH1F *)histCosDir2_ref->Clone("hCosDir2Diff");
+  histCosDir2_diff->Add(histCosDir2, -1);
+  histCosDir2_diff->SetDirectory(0);
+  histCosDir2_diff->SetFillStyle(3001);
+  histCosDir2_diff->SetFillColor(kBlue);
+  canvasLines->cd(5);
+  histCosDir2_diff->Draw("sames");
+  histCosDir3_diff = (TH1F *)histCosDir3_ref->Clone("hCosDir3Diff");
+  histCosDir3_diff->Add(histCosDir3, -1);
+  histCosDir3_diff->SetDirectory(0);
+  histCosDir3_diff->SetFillStyle(3001);
+  histCosDir3_diff->SetFillColor(kBlue);
+  canvasLines->cd(6);
+  histCosDir3_diff->Draw("sames");
 
   // Debug clusters block
   histClusTanLambda->SetDirectory(0);
