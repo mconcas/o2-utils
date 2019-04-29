@@ -36,6 +36,8 @@ void VertexerDataBrowser(
   TNtuple *phi01 = (TNtuple *)vertexerData.Get("clus_phi01");
   TNtuple *phi12 = (TNtuple *)vertexerData.Get("clus_phi12");
   TNtuple *deltaTanLambda = (TNtuple *)vertexerData.Get("dtl");
+  TNtuple *centroids = (TNtuple *)vertexerData.Get("centroids");
+  TNtuple *linesData = (TNtuple *)vertexerData.Get("ld");
 
   TNtuple *linesRef{NULL};
   TNtuple *comb01Ref{NULL};
@@ -43,6 +45,8 @@ void VertexerDataBrowser(
   TNtuple *phi01Ref{NULL};
   TNtuple *phi12Ref{NULL};
   TNtuple *deltaTanLambdaRef{NULL};
+  TNtuple *centroidsRef{NULL};
+  TNtuple *linesDataRef{NULL};
 
   // Comparison data
   if (compare) {
@@ -52,6 +56,8 @@ void VertexerDataBrowser(
     phi01Ref = (TNtuple *)vertexerComparisonData->Get("clus_phi01");
     phi12Ref = (TNtuple *)vertexerComparisonData->Get("clus_phi12");
     deltaTanLambdaRef = (TNtuple *)vertexerComparisonData->Get("dtl");
+    centroidsRef = (TNtuple *)vertexerComparisonData->Get("centroids");
+    linesDataRef = (TNtuple *)vertexerComparisonData->Get("ld");
   }
 
   TH1F *histComb01Phi =
