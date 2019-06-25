@@ -105,9 +105,9 @@ void VertexerDataBrowser(
       new TH2F("hPhi1Phi2", "phi1 vs phi2", 200, 0.f, 6.29f, 200, 0.f, 6.29f);
   TH1F *histPhi01 = new TH1F("hPhi01", "Phi0 - Phi1; Phi0 - Phi1 (rad); Number of Clusters", 200, -1.f, 1.f);
   TH1F *histPhi12 = new TH1F("hPhi12", "Phi1 - Phi2; Phi1 - Phi2 (rad); Number of Clusters", 200, -1.f, 1.f);
-  TH1F *histOrigX = new TH1F("hOrigX", "Origin X; X (mm); Number of Lines ", 200, -3, 3);
-  TH1F *histOrigY = new TH1F("hOrigY", "Origin Y; Y (mm); Number of Lines", 200, -3, 3);
-  TH1F *histOrigZ = new TH1F("hOrigZ", "Origin Z; Z (mm); Number of Lines", 200, -25, 25);
+  TH1F *histOrigX = new TH1F("hOrigX", "Origin X; X (cm); Number of Lines ", 200, -3, 3);
+  TH1F *histOrigY = new TH1F("hOrigY", "Origin Y; Y (cm); Number of Lines", 200, -3, 3);
+  TH1F *histOrigZ = new TH1F("hOrigZ", "Origin Z; Z (cm); Number of Lines", 200, -25, 25);
   TH1F *histCosDir1 =
       new TH1F("hCosDir1", "Cosine director 1; Cosine ; Number of Lines", 100, -1.2f, 1.2f);
   TH1F *histCosDir2 =
@@ -443,7 +443,7 @@ void VertexerDataBrowser(
   canvasClusters->cd(5)->SetLogy();
   Drawing(100, compare, histPhi01, histPhi01_ref);
   canvasClusters->cd(6)->SetLogy();
-  Drawing(0.0001, compare, histPhi12, histPhi12_ref);
+  Drawing(100, compare, histPhi12, histPhi12_ref);
 
   // Lines block
 
