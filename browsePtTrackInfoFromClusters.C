@@ -109,8 +109,6 @@ void browsePtTrackInfoFromClusters(
     labelsToSave->swap(roLabels);
     tracksToSave->swap(roTracks);
     outTree.Fill();
-    if (ROCounter > 10)
-      break;
   }
   outTree.Write();
   outfile->Close();
