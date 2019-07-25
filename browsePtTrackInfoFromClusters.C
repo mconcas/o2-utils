@@ -10,11 +10,15 @@
 
 #if !defined(__CLING__) || defined(__ROOTCLING__)
 
+#include <algorithm>
 #include <iostream>
+#include <iomanip>
 #include <vector>
 
 #include "TChain.h"
 #include "TFile.h"
+#include "TString.h"
+#define GSL_THROW_ON_CONTRACT_VIOLATION
 #include <gsl/gsl>
 
 #include "DataFormatsITSMFT/Cluster.h"
@@ -29,11 +33,17 @@
 #include "SimulationDataFormat/MCTruthContainer.h"
 
 void browsePtTrackInfoFromClusters(
+    const int startRof = 0,
+    const int nRof = -1,
+    const unsigned char muted = true,
     const std::string path = "./",
     const std::string inputClustersITS = "o2clus_its.root",
     const std::string simfilename = "o2sim.root",
-    const std::string paramfilename = "O2geometry.root",
-    const std::string outputfile = "label2Track.root") {
+    const std::string paramfilename = "O2geometry.root")
+{
+  TString outputfile;
+  outputfile.Form("label2Track%d.root", startRof);
+
   // Setup Runtime DB
   TFile paramFile((path + paramfilename).data());
   paramFile.Get("FAIRGeom");
@@ -48,7 +58,7 @@ void browsePtTrackInfoFromClusters(
   itsClusters.AddFile((path + inputClustersITS).data());
   itsClustersROF.AddFile((path + inputClustersITS).data());
   std::vector<o2::itsmft::Cluster> *clusters = nullptr;
-  std::vector<o2::itsmft::ROFRecord> *rofs = nullptr;
+  std::vector<o2::itsmft::ROFRecord> *rofs = nullptr; // only one rofrecord
   o2::dataformats::MCTruthContainer<o2::MCCompLabel> *labels = nullptr;
   itsClusters.SetBranchAddress("ITSCluster", &clusters);
   itsClustersROF.SetBranchAddress("ITSClustersROF", &rofs);
@@ -63,7 +73,7 @@ void browsePtTrackInfoFromClusters(
   mcHeaderTree.SetBranchAddress("MCTrack", &tracks);
 
   // Output data
-  TFile *outfile = new TFile(outputfile.data(), "recreate");
+  TFile *outfile = new TFile(outputfile.Data(), "recreate");
   TTree outTree("Labels2Tracks", "labels2tracks");
   std::vector<o2::MCCompLabel> *labelsToSave = new std::vector<o2::MCCompLabel>;
   std::vector<o2::MCTrack> *tracksToSave = new std::vector<o2::MCTrack>;
@@ -72,46 +82,52 @@ void browsePtTrackInfoFromClusters(
 
   o2::its::GeometryTGeo *geom = o2::its::GeometryTGeo::Instance();
   geom->fillMatrixCache(o2::utils::bit2Mask(o2::TransformType::T2GRot));
+  int stopAt = nRof == -1 ? (*rofs).size() : static_cast<int>(std::min(static_cast<int>((*rofs).size()), startRof + nRof));
 
-  int ROCounter{0};
-
-  for (o2::itsmft::ROFRecord &rofRec : *rofs) {
-    itsClustersROF.GetEntry(rofRec.getROFEntry().getEvent());
+  for (auto iRof{startRof}; iRof < stopAt; ++iRof)
+  {
+    auto &rofRec = (*rofs)[iRof];
+    int clusterId{0};
     int first = static_cast<int>(rofRec.getROFEntry().getIndex());
     int number = static_cast<int>(rofRec.getNROFEntries());
     std::vector<o2::MCCompLabel> roLabels;
     std::vector<o2::MCTrack> roTracks;
-    std::cout << "ROframe: " << ROCounter++ << std::endl;
-    for (int iCluster{first}; iCluster < first + number; ++iCluster) {
-      auto &c = (*clusters)[iCluster];
-      if (0 == geom->getLayer(c.getSensorID())) {
-        auto &lbl = *labels->getLabels(first + iCluster).begin();
-        if (lbl.isValid() && !lbl.isFake() && lbl.getSourceID() == 0) {
-          if (mcHeaderTree.GetReadEntry() != lbl.getEventID()) {
+    if (!muted)
+      std::cerr << "ROframe: " << iRof << std::endl;
+    auto clusters_in_frame = gsl::make_span(&(*clusters)[first], number);
+
+    for (auto &c : clusters_in_frame)
+    {
+      if (geom->getLayer(c.getSensorID()) == 0) // Select clusters on Layer 0
+      {
+        const auto &lbl = *(labels->getLabels(first + clusterId).begin());
+        if (lbl.isValid() && lbl.getSourceID() == 0)
+        {
+          if (mcHeaderTree.GetReadEntry() != lbl.getEventID())
+          {
             // to avoid repetitive reading of the same event
             mcHeaderTree.GetEntry(lbl.getEventID());
           }
-          if (!(lbl.getTrackID() == 2147483647)) {
-            const auto mcTr = (*tracks)[lbl.getTrackID()];
-            std::cout << "\tid: " << lbl.getTrackID()
-                      << " PDG: " << mcTr.GetPdgCode()
-                      << " pT: " << mcTr.GetPt() << "\n";
-            roLabels.push_back(lbl);
-            roTracks.push_back(mcTr);
 
-          } else {
-            std::cout << "\t -> " << lbl.getTrackID()
-                      << " evt ID: " << lbl.getEventID() << std::endl;
+          const auto mcTr = (*tracks)[lbl.getTrackID()];
+          if (!muted)
+          {
+            std::cout << "\tid: " << std::setw(9) << lbl.getTrackID()
+                      << " PDG: " << std::setw(12) << mcTr.GetPdgCode()
+                      << " pT: " << std::setw(9) << mcTr.GetPt() << "\n";
           }
+          roLabels.push_back(lbl);
+          roTracks.push_back(mcTr);
         }
       }
+      clusterId++;
     }
+
     labelsToSave->swap(roLabels);
     tracksToSave->swap(roTracks);
     outTree.Fill();
   }
   outTree.Write();
   outfile->Close();
-  
 }
 #endif
