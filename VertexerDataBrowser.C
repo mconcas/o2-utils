@@ -94,7 +94,7 @@ void VertexerDataBrowser(
   TH1F *histComb12TanLambda =
       new TH1F("hComb12tlambda", "Comb12 tanLambda; TanLambda ; Number of Tracklets", 100, -65.f, 65.f);
   TH1F *histDeltaTanLambda =
-      new TH1F("hdtlambda", "DeltaTanLambda; Difference in TanLambda; Number of Tracklets", 100, 0, 0.03f);    
+      new TH1F("hdtlambda", "DeltaTanLambda; Abs(deltaTanLambda); Number of Tracklets", 100, 0, 0.03f);
   TH2F *histDelta01Phi1 = new TH2F("hDelta01Phi1", "DeltaPhi 01 vs Phi1", 100,
                                    0.f, 6.29f, 200, -1.f, 1.f);
   TH2F *histDelta12Phi1 = new TH2F("hDelta12Phi1", "DeltaPhi 12 vs Phi1", 100,
@@ -469,8 +469,7 @@ void VertexerDataBrowser(
 
 
 void Drawing(double DefaultMin, bool compare, TH1F * hist, TH1F * hist_ref ){
-
-TH1F * hist_diff;
+  TH1F *hist_diff = nullptr;
 
   if(compare){
     string HistDiffName = (string)(hist->GetName());
@@ -502,7 +501,8 @@ TH1F * hist_diff;
   
   if(compare){
     hist_ref->Draw("sames");
-    hist_diff->Draw("sames");
+    if (hist_diff != nullptr)
+      hist_diff->Draw("sames");
   }
 }
 
