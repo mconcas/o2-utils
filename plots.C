@@ -1,0 +1,316 @@
+#if !defined(__CLING__) || defined(__ROOTCLING__)
+
+#include <memory>
+#include <TChain.h>
+#include <TFile.h>
+#include <TSystem.h>
+#include <TNtuple.h>
+#include <TCanvas.h>
+#include <TH1F.h>
+#include <TLegend.h>
+#include <TStyle.h>
+#include <TPaveStats.h>
+
+#include "DataFormatsITSMFT/Cluster.h"
+#include "DataFormatsITSMFT/ROFRecord.h"
+#include "DataFormatsParameters/GRPObject.h"
+#include "SimulationDataFormat/MCEventHeader.h"
+#include "SimulationDataFormat/MCTruthContainer.h"
+
+#include "ITSBase/GeometryTGeo.h"
+#include "ITStracking/IOUtils.h"
+#include "ITStracking/Vertexer.h"
+
+#include "GPUO2Interface.h"
+#include "GPUReconstruction.h"
+#include "GPUChainITS.h"
+
+#endif
+namespace o2
+{
+namespace its
+{
+
+void arrangeClusters(ROframe *event, std::array<std::vector<Cluster>, constants::its::LayersNumberVertexer> &mClusters)
+{
+
+    for (int iLayer{0}; iLayer < constants::its::LayersNumberVertexer; ++iLayer)
+    {
+        const auto &currentLayer{event->getClustersOnLayer(iLayer)};
+        const size_t clustersNum{currentLayer.size()};
+        if (clustersNum > 0)
+        {
+            if (clustersNum > mClusters[iLayer].capacity())
+            {
+                mClusters[iLayer].reserve(clustersNum);
+            }
+            for (unsigned int iCluster{0}; iCluster < clustersNum; ++iCluster)
+            {
+                mClusters[iLayer].emplace_back(iLayer, currentLayer.at(iCluster));
+            }
+            std::sort(mClusters[iLayer].begin(), mClusters[iLayer].end(), [](Cluster &cluster1, Cluster &cluster2) {
+                return cluster1.indexTableBinIndex < cluster2.indexTableBinIndex;
+            });
+        }
+    }
+}
+} // namespace its
+} // namespace o2
+
+void plotClusters(const int startAt,
+                  const int stopAt,
+                  std::vector<o2::itsmft::ROFRecord> *rofs,
+                  std::vector<o2::itsmft::Cluster> *clusters,
+                  o2::dataformats::MCTruthContainer<o2::MCCompLabel> *labels)
+{
+    std::array<std::vector<o2::its::Cluster>, o2::its::constants::its::LayersNumberVertexer> itsclusters;
+    gStyle->SetOptStat(0);
+    TH1F *histClus0Phi =
+        new TH1F("Layer 0", "Azimuthal angle #phi, 150 PbPb evts minBias;#phi (rad); N_{clusters}", 400, 0.f, 6.3f);
+    TH1F *histClus0R =
+        new TH1F("Layer 0", "Radial coordinate R, 150 PbPb evts minBias;R (cm); N_{clusters}", 400, 0.f, 4.5f);
+    TH1F *histClus0Z =
+        new TH1F("Layer 0", "Z coordinate Z, 150 PbPb evts minBias;z (cm); N_{clusters}", 700, -16.5f, 16.5f);
+
+    // Setup histograms
+    histClus0Phi->SetMinimum(0);
+    histClus0Phi->SetFillColor(TColor::GetColor("#29335C"));
+    histClus0Phi->SetLineColor(TColor::GetColor("#29335C"));
+    histClus0Phi->SetFillStyle(1001);
+    histClus0Phi->SetMinimum(0);
+    histClus0R->SetFillColor(TColor::GetColor("#29335C"));
+    histClus0R->SetLineColor(TColor::GetColor("#29335C"));
+    histClus0R->SetFillStyle(1001);
+    histClus0Z->SetFillColor(TColor::GetColor("#29335C"));
+    histClus0Z->SetLineColor(TColor::GetColor("#29335C"));
+    histClus0Z->SetFillStyle(1001);
+
+    TH1F *histClus1Phi =
+        new TH1F("Layer 1", "Azimuthal angle distributions;#phi (rad); N_{clusters}", 400, 0.f, 6.3f);
+    TH1F *histClus1R =
+        new TH1F("Layer 1", "Radial coordinate R, 150 PbPb evts minBias;R (cm); N_{clusters}", 400, 0.f, 4.5f);
+    TH1F *histClus1Z =
+        new TH1F("Layer 1", "Z coordinate Z, 150 PbPb evts minBias;z (cm); N_{clusters}", 700, -16.5f, 16.5f);
+    histClus1Phi->SetFillColor(TColor::GetColor("#E4572E"));
+    histClus1Phi->SetLineColor(TColor::GetColor("#E4572E"));
+    histClus1Phi->SetFillStyle(1001);
+    histClus1R->SetFillColor(TColor::GetColor("#E4572E"));
+    histClus1R->SetLineColor(TColor::GetColor("#E4572E"));
+    histClus1R->SetFillStyle(1001);
+    histClus1Z->SetFillColor(TColor::GetColor("#E4572E"));
+    histClus1Z->SetLineColor(TColor::GetColor("#E4572E"));
+    histClus1Z->SetFillStyle(1001);
+
+    TH1F *histClus2Phi =
+        new TH1F("Layer 2", "Azimuthal angle distributions;#phi (rad); N_{clusters}", 400, 0.f, 6.3f);
+    TH1F *histClus2R =
+        new TH1F("Layer 2", "Radial coordinate R, 150 PbPb evts minBias;R (cm); N_{clusters}", 400, 0.f, 4.5f);
+    TH1F *histClus2Z =
+        new TH1F("Layer 2", "Z coordinate Z, 150 PbPb evts minBias;z (cm); N_{clusters}", 700, -16.5f, 16.5f);
+    histClus1Phi->SetMinimum(0);
+    histClus2Phi->SetFillColor(TColor::GetColor("#F3A712"));
+    histClus2Phi->SetLineColor(TColor::GetColor("#F3A712"));
+    histClus2Phi->SetFillStyle(1001);
+    histClus2R->SetFillColor(TColor::GetColor("#F3A712"));
+    histClus2R->SetLineColor(TColor::GetColor("#F3A712"));
+    histClus2R->SetFillStyle(1001);
+    histClus2Z->SetMinimum(0);
+    histClus2Z->SetFillColor(TColor::GetColor("#F3A712"));
+    histClus2Z->SetLineColor(TColor::GetColor("#F3A712"));
+    histClus2Z->SetFillStyle(1001);
+
+    for (int iROfCount{startAt}; iROfCount < stopAt; ++iROfCount)
+    {
+        for (auto &layer : itsclusters)
+            layer.clear();
+        auto &rof = (*rofs)[iROfCount];
+        o2::its::ROframe frame{iROfCount}; // to get meaningful roframeId
+        std::cout << "ROframe: " << iROfCount << std::endl;
+        int nclUsed = o2::its::ioutils::loadROFrameData(rof, frame, clusters, labels);
+        o2::its::arrangeClusters(&frame, itsclusters);
+
+        for (auto &cluster : itsclusters[0])
+        {
+            histClus0Phi->Fill(cluster.phiCoordinate);
+            histClus0R->Fill(cluster.rCoordinate);
+            histClus0Z->Fill(cluster.zCoordinate);
+        }
+        for (auto &cluster : itsclusters[1])
+        {
+            histClus1Phi->Fill(cluster.phiCoordinate);
+            histClus1R->Fill(cluster.rCoordinate);
+            histClus1Z->Fill(cluster.zCoordinate);
+        }
+        for (auto &cluster : itsclusters[2])
+        {
+            histClus2Phi->Fill(cluster.phiCoordinate);
+            histClus2R->Fill(cluster.rCoordinate);
+            histClus2Z->Fill(cluster.zCoordinate);
+        }
+    }
+    auto canvasClustersPhi = new TCanvas("ClustersPhi", "Clusters data phi", 1600, 1000);
+    histClus0Phi->SetDirectory(0);
+    canvasClustersPhi->cd();
+    histClus0Phi->Draw();
+    histClus1Phi->SetDirectory(0);
+    histClus1Phi->Draw("same");
+    histClus2Phi->SetDirectory(0);
+    histClus2Phi->Draw("same");
+
+    // gPad->Update();
+    // TPaveStats *st0Phi = (TPaveStats *)histClus0Phi->FindObject("stats");
+    // st0Phi->SetX1NDC(0.1);
+    // st0Phi->SetX2NDC(0.2);
+    // st0Phi->SetY1NDC(0.1);
+    // st0Phi->SetY2NDC(0.2);
+
+    // TPaveStats *st1Phi = (TPaveStats *)histClus1Phi->FindObject("stats");
+    // st1Phi->SetX1NDC(0.2);
+    // st1Phi->SetX2NDC(0.3);
+    // st1Phi->SetY1NDC(0.1);
+    // st1Phi->SetY2NDC(0.2);
+    // st1Phi->Pop(); st1Phi->Pop();
+
+    // TPaveStats *st2Phi = (TPaveStats *)histClus2Phi->FindObject("stats");
+    // st2Phi->SetX1NDC(0.3);
+    // st2Phi->SetX2NDC(0.4);
+    // st2Phi->SetY1NDC(0.1);
+    // st2Phi->SetY2NDC(0.2);
+    // gPad->Modified(); gPad->Update();
+
+    // Legend
+    gStyle->SetLegendTextSize(0.);
+    auto legendPhi = new TLegend(0.7, 0.1, 0.9, 0.2);
+    legendPhi->AddEntry(histClus0Phi, Form("%s: entries %d ", histClus0Phi->GetName(), (int)histClus0Phi->GetEntries()), "f");
+    legendPhi->AddEntry(histClus1Phi, Form("%s: entries %d ", histClus1Phi->GetName(), (int)histClus1Phi->GetEntries()), "f");
+    legendPhi->AddEntry(histClus2Phi, Form("%s: entries %d ", histClus2Phi->GetName(), (int)histClus2Phi->GetEntries()), "f");
+    legendPhi->Draw();
+
+    /////////////////////////////////
+    auto canvasClustersR = new TCanvas("ClustersR", "Clusters data R", 1600, 1000);
+    canvasClustersR->cd();
+    histClus0R->SetDirectory(0);
+    histClus0R->Draw();
+    histClus1R->SetDirectory(0);
+    histClus1R->Draw("same");
+    histClus2R->SetDirectory(0);
+    histClus2R->Draw("same");
+    // gPad->Update();
+    // TPaveStats *st0R = (TPaveStats *)histClus0R->FindObject("stats");
+    // st0R->SetX1NDC(0.1);
+    // st0R->SetX2NDC(0.2);
+    // st0R->SetY1NDC(0.8);
+    // st0R->SetY2NDC(0.9);
+    // gPad->Update();
+    // TPaveStats *st1R = (TPaveStats *)histClus1R->FindObject("stats");
+    // st1R->SetX1NDC(0.2);
+    // st1R->SetX2NDC(0.3);
+    // st1R->SetY1NDC(0.8);
+    // st1R->SetY2NDC(0.9);
+    // gPad->Update();
+    // TPaveStats *st2R = (TPaveStats *)histClus2R->FindObject("stats");
+    // st2R->SetX1NDC(0.3);
+    // st2R->SetX2NDC(0.4);
+    // st2R->SetY1NDC(0.8);
+    // st2R->SetY2NDC(0.9);
+
+    // Legend
+    gStyle->SetLegendTextSize(0.);
+    auto legendR = new TLegend(0.1, 0.1, 0.3, 0.2);
+    legendR->AddEntry(histClus0R, Form("%s: entries %d ", histClus0R->GetName(), (int)histClus0R->GetEntries()), "f");
+    legendR->AddEntry(histClus1R, Form("%s: entries %d ", histClus1R->GetName(), (int)histClus1R->GetEntries()), "f");
+    legendR->AddEntry(histClus2R, Form("%s: entries %d ", histClus2R->GetName(), (int)histClus2R->GetEntries()), "f");
+    legendR->Draw();
+
+    ///////////////////////////////
+    auto canvasClustersZ = new TCanvas("ClustersZ", "Clusters data Z", 1600, 1000);
+    canvasClustersZ->cd();
+    histClus0Z->SetDirectory(0);
+    histClus0Z->Draw();
+    histClus1Z->SetDirectory(0);
+    histClus1Z->Draw("same");
+    histClus2Z->SetDirectory(0);
+    histClus2Z->Draw("same");
+    // gPad->Update();
+    // TPaveStats *st0Z = (TPaveStats *)histClus0Z->FindObject("stats");
+    // st0Z->SetX1NDC(0.1);
+    // st0Z->SetX2NDC(0.2);
+    // st0Z->SetY1NDC(0.8);
+    // st0Z->SetY2NDC(0.9);
+    // gPad->Update();
+    // TPaveStats *st1Z = (TPaveStats *)histClus1Z->FindObject("stats");
+    // st1Z->SetX1NDC(0.2);
+    // st1Z->SetX2NDC(0.3);
+    // st1Z->SetY1NDC(0.8);
+    // st1Z->SetY2NDC(0.9);
+    // gPad->Update();
+    // TPaveStats *st2Z = (TPaveStats *)histClus2Z->FindObject("stats");
+    // st2Z->SetX1NDC(0.3);
+    // st2Z->SetX2NDC(0.4);
+    // st2Z->SetY1NDC(0.8);
+    // st2Z->SetY2NDC(0.9);
+
+    // Legend
+    gStyle->SetLegendTextSize(0.);
+    auto legendZ = new TLegend(0.7, 0.8, 0.9, 0.9);
+    legendZ->AddEntry(histClus0Z,  Form("%s: entries %d ", histClus0Z->GetName(), (int)histClus0Z->GetEntries()), "f");
+    legendZ->AddEntry(histClus1Z,  Form("%s: entries %d ", histClus1Z->GetName(), (int)histClus1Z->GetEntries()), "f");
+    legendZ->AddEntry(histClus2Z,  Form("%s: entries %d ", histClus2Z->GetName(), (int)histClus2Z->GetEntries()), "f");
+    legendZ->Draw();
+
+    canvasClustersPhi->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersPhi.pdf", "r");
+    canvasClustersR->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersR.pdf", "r");
+    canvasClustersZ->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersZ.pdf", "r");
+}
+
+int plots(const int inspEvt = -1,
+          const int numEvents = 1,
+          const std::string inputClustersITS = "o2clus_its.root",
+          const std::string inputGRP = "o2sim_grp.root",
+          const std::string simfilename = "o2sim.root",
+          const std::string paramfilename = "O2geometry.root",
+          const std::string path = "./")
+{
+
+    const auto grp = o2::parameters::GRPObject::loadFrom(path + inputGRP);
+    const bool isITS = grp->isDetReadOut(o2::detectors::DetID::ITS);
+    const bool isContITS = grp->isDetContinuousReadOut(o2::detectors::DetID::ITS);
+    std::cout << "ITS is in " << (isContITS ? "CONTINUOS" : "TRIGGERED") << " readout mode" << std::endl;
+    TChain itsClusters("o2sim");
+    itsClusters.AddFile((path + inputClustersITS).data());
+
+    // Setup Runtime DB
+    TFile paramFile((path + paramfilename).data());
+    paramFile.Get("FAIRGeom");
+    auto gman = o2::its::GeometryTGeo::Instance();
+    gman->fillMatrixCache(o2::utils::bit2Mask(o2::TransformType::T2L, o2::TransformType::T2GRot,
+                                              o2::TransformType::L2G)); // request cached transforms
+
+    TChain mcHeaderTree("o2sim");
+    mcHeaderTree.AddFile((path + simfilename).data());
+    o2::dataformats::MCEventHeader *mcHeader = nullptr;
+    mcHeaderTree.SetBranchAddress("MCEventHeader.", &mcHeader);
+
+    std::vector<o2::itsmft::Cluster> *clusters = nullptr;
+    itsClusters.SetBranchAddress("ITSCluster", &clusters);
+
+    TChain itsClustersROF("ITSClustersROF");
+    itsClustersROF.AddFile((path + inputClustersITS).data());
+
+    std::vector<o2::itsmft::ROFRecord> *rofs = nullptr;
+    itsClustersROF.SetBranchAddress("ITSClustersROF", &rofs);
+    itsClustersROF.GetEntry(0);
+
+    o2::dataformats::MCTruthContainer<o2::MCCompLabel> *labels = nullptr;
+    itsClusters.SetBranchAddress("ITSClusterMCTruth", &labels);
+
+    const int stopAt = (inspEvt == -1) ? rofs->size() : inspEvt + numEvents;
+    const int startAt = (inspEvt == -1) ? 0 : inspEvt;
+
+    itsClusters.GetEntry(0);
+    mcHeaderTree.GetEntry(0);
+
+    plotClusters(startAt, stopAt, rofs, clusters, labels);
+
+    return 0;
+}

@@ -1,2 +1,6 @@
-.vscode
+*.root
+*.d
 *_C*
+*.pcm
+.vscode
+*.pdf
