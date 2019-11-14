@@ -10,6 +10,7 @@
 #include <TLegend.h>
 #include <TStyle.h>
 #include <TPaveStats.h>
+#include <TH2D.h>
 
 #include "DataFormatsITSMFT/Cluster.h"
 #include "DataFormatsITSMFT/ROFRecord.h"
@@ -66,11 +67,11 @@ void plotClusters(const int startAt,
     std::array<std::vector<o2::its::Cluster>, o2::its::constants::its::LayersNumberVertexer> itsclusters;
     gStyle->SetOptStat(0);
     TH1F *histClus0Phi =
-        new TH1F("Layer 0", "Azimuthal angle #phi, 150 PbPb evts minBias;#phi (rad); N_{clusters}", 400, 0.f, 6.3f);
+        new TH1F("Layer 0", "Azimuthal angle #phi, 150 PbPb evts minBias;#phi (rad); N_{clusters}", 400, 0.f, TMath::TwoPi());
     TH1F *histClus0R =
-        new TH1F("Layer 0", "Radial coordinate R, 150 PbPb evts minBias;R (cm); N_{clusters}", 400, 0.f, 4.5f);
+        new TH1F("Layer 0", "Radial coordinate R, 150 PbPb evts minBias;R (cm); N_{clusters}", 400, 2.f, 4.5f);
     TH1F *histClus0Z =
-        new TH1F("Layer 0", "Z coordinate Z, 150 PbPb evts minBias;z (cm); N_{clusters}", 700, -16.5f, 16.5f);
+        new TH1F("Layer 0", "Z coordinate, 150 PbPb evts minBias;z (cm); N_{clusters}", 500, -15.5f, 15.5f);
 
     // Setup histograms
     histClus0Phi->SetMinimum(0);
@@ -86,11 +87,12 @@ void plotClusters(const int startAt,
     histClus0Z->SetFillStyle(1001);
 
     TH1F *histClus1Phi =
-        new TH1F("Layer 1", "Azimuthal angle distributions;#phi (rad); N_{clusters}", 400, 0.f, 6.3f);
+        new TH1F("Layer 1", "Azimuthal angle #phi, 150 PbPb evts minBias;#phi (rad); N_{clusters}", 400, 0.f, TMath::TwoPi());
     TH1F *histClus1R =
-        new TH1F("Layer 1", "Radial coordinate R, 150 PbPb evts minBias;R (cm); N_{clusters}", 400, 0.f, 4.5f);
+        new TH1F("Layer 1", "Radial coordinate R, 150 PbPb evts minBias;R (cm); N_{clusters}", 400, 2.f, 4.5f);
     TH1F *histClus1Z =
-        new TH1F("Layer 1", "Z coordinate Z, 150 PbPb evts minBias;z (cm); N_{clusters}", 700, -16.5f, 16.5f);
+        new TH1F("Layer 1", "Z coordinate Z, 150 PbPb evts minBias;z (cm); N_{clusters}", 500, -16.5f, 16.5f);
+
     histClus1Phi->SetFillColor(TColor::GetColor("#E4572E"));
     histClus1Phi->SetLineColor(TColor::GetColor("#E4572E"));
     histClus1Phi->SetFillStyle(1001);
@@ -102,11 +104,11 @@ void plotClusters(const int startAt,
     histClus1Z->SetFillStyle(1001);
 
     TH1F *histClus2Phi =
-        new TH1F("Layer 2", "Azimuthal angle distributions;#phi (rad); N_{clusters}", 400, 0.f, 6.3f);
+        new TH1F("Layer 2", "Azimuthal angle #phi, 150 PbPb evts minBias;#phi (rad); N_{clusters}", 400, 0.f, TMath::TwoPi());
     TH1F *histClus2R =
-        new TH1F("Layer 2", "Radial coordinate R, 150 PbPb evts minBias;R (cm); N_{clusters}", 400, 0.f, 4.5f);
+        new TH1F("Layer 2", "Radial coordinate R, 150 PbPb evts minBias;R (cm); N_{clusters}", 400, 2.f, 4.5f);
     TH1F *histClus2Z =
-        new TH1F("Layer 2", "Z coordinate Z, 150 PbPb evts minBias;z (cm); N_{clusters}", 700, -16.5f, 16.5f);
+        new TH1F("Layer 2", "Z coordinate Z, 150 PbPb evts minBias;z (cm); N_{clusters}", 500, -16.5f, 16.5f);
     histClus1Phi->SetMinimum(0);
     histClus2Phi->SetFillColor(TColor::GetColor("#F3A712"));
     histClus2Phi->SetLineColor(TColor::GetColor("#F3A712"));
@@ -118,6 +120,8 @@ void plotClusters(const int startAt,
     histClus2Z->SetFillColor(TColor::GetColor("#F3A712"));
     histClus2Z->SetLineColor(TColor::GetColor("#F3A712"));
     histClus2Z->SetFillStyle(1001);
+
+    TH2D *rphi = new TH2D("R-#phi", "R vs #phi, 150 PbPb evts minBias; #phi (rad); R (cm)", 400, 0.f, TMath::TwoPi(), 400, 2.f, 4.2f);
 
     for (int iROfCount{startAt}; iROfCount < stopAt; ++iROfCount)
     {
@@ -134,89 +138,60 @@ void plotClusters(const int startAt,
             histClus0Phi->Fill(cluster.phiCoordinate);
             histClus0R->Fill(cluster.rCoordinate);
             histClus0Z->Fill(cluster.zCoordinate);
+            rphi->Fill(cluster.phiCoordinate, cluster.rCoordinate);
         }
         for (auto &cluster : itsclusters[1])
         {
             histClus1Phi->Fill(cluster.phiCoordinate);
             histClus1R->Fill(cluster.rCoordinate);
             histClus1Z->Fill(cluster.zCoordinate);
+            rphi->Fill(cluster.phiCoordinate, cluster.rCoordinate);
         }
         for (auto &cluster : itsclusters[2])
         {
             histClus2Phi->Fill(cluster.phiCoordinate);
             histClus2R->Fill(cluster.rCoordinate);
             histClus2Z->Fill(cluster.zCoordinate);
+            rphi->Fill(cluster.phiCoordinate, cluster.rCoordinate);
         }
     }
-    auto canvasClustersPhi = new TCanvas("ClustersPhi", "Clusters data phi", 1600, 1000);
+
+    auto canvasClustersPhi = new TCanvas("ClustersPhi", "Clusters data phi", 1300, 1000);
     histClus0Phi->SetDirectory(0);
     canvasClustersPhi->cd();
+    histClus0Phi->GetYaxis()->SetMaxDigits(2);
     histClus0Phi->Draw();
     histClus1Phi->SetDirectory(0);
+    histClus1Phi->GetYaxis()->SetMaxDigits(2);
     histClus1Phi->Draw("same");
     histClus2Phi->SetDirectory(0);
+    histClus2Phi->GetYaxis()->SetMaxDigits(2);
     histClus2Phi->Draw("same");
-
-    // gPad->Update();
-    // TPaveStats *st0Phi = (TPaveStats *)histClus0Phi->FindObject("stats");
-    // st0Phi->SetX1NDC(0.1);
-    // st0Phi->SetX2NDC(0.2);
-    // st0Phi->SetY1NDC(0.1);
-    // st0Phi->SetY2NDC(0.2);
-
-    // TPaveStats *st1Phi = (TPaveStats *)histClus1Phi->FindObject("stats");
-    // st1Phi->SetX1NDC(0.2);
-    // st1Phi->SetX2NDC(0.3);
-    // st1Phi->SetY1NDC(0.1);
-    // st1Phi->SetY2NDC(0.2);
-    // st1Phi->Pop(); st1Phi->Pop();
-
-    // TPaveStats *st2Phi = (TPaveStats *)histClus2Phi->FindObject("stats");
-    // st2Phi->SetX1NDC(0.3);
-    // st2Phi->SetX2NDC(0.4);
-    // st2Phi->SetY1NDC(0.1);
-    // st2Phi->SetY2NDC(0.2);
-    // gPad->Modified(); gPad->Update();
 
     // Legend
     gStyle->SetLegendTextSize(0.);
-    auto legendPhi = new TLegend(0.7, 0.1, 0.9, 0.2);
+    auto legendPhi = new TLegend(0.3, 0.12, 0.7, 0.32);
     legendPhi->AddEntry(histClus0Phi, Form("%s: entries %d ", histClus0Phi->GetName(), (int)histClus0Phi->GetEntries()), "f");
     legendPhi->AddEntry(histClus1Phi, Form("%s: entries %d ", histClus1Phi->GetName(), (int)histClus1Phi->GetEntries()), "f");
     legendPhi->AddEntry(histClus2Phi, Form("%s: entries %d ", histClus2Phi->GetName(), (int)histClus2Phi->GetEntries()), "f");
     legendPhi->Draw();
 
     /////////////////////////////////
-    auto canvasClustersR = new TCanvas("ClustersR", "Clusters data R", 1600, 1000);
+    auto canvasClustersR = new TCanvas("ClustersR", "Clusters data R", 1300, 1000);
     canvasClustersR->cd();
     histClus0R->SetDirectory(0);
+    histClus0R->GetYaxis()->SetMaxDigits(0);
     histClus0R->Draw();
     histClus1R->SetDirectory(0);
+    histClus1R->GetYaxis()->SetMaxDigits(0);
     histClus1R->Draw("same");
     histClus2R->SetDirectory(0);
+    histClus2R->GetYaxis()->SetMaxDigits(0);
     histClus2R->Draw("same");
-    // gPad->Update();
-    // TPaveStats *st0R = (TPaveStats *)histClus0R->FindObject("stats");
-    // st0R->SetX1NDC(0.1);
-    // st0R->SetX2NDC(0.2);
-    // st0R->SetY1NDC(0.8);
-    // st0R->SetY2NDC(0.9);
-    // gPad->Update();
-    // TPaveStats *st1R = (TPaveStats *)histClus1R->FindObject("stats");
-    // st1R->SetX1NDC(0.2);
-    // st1R->SetX2NDC(0.3);
-    // st1R->SetY1NDC(0.8);
-    // st1R->SetY2NDC(0.9);
-    // gPad->Update();
-    // TPaveStats *st2R = (TPaveStats *)histClus2R->FindObject("stats");
-    // st2R->SetX1NDC(0.3);
-    // st2R->SetX2NDC(0.4);
-    // st2R->SetY1NDC(0.8);
-    // st2R->SetY2NDC(0.9);
 
     // Legend
     gStyle->SetLegendTextSize(0.);
-    auto legendR = new TLegend(0.1, 0.1, 0.3, 0.2);
+    auto legendR = new TLegend(0.3, 0.68, 0.7, 0.88);
     legendR->AddEntry(histClus0R, Form("%s: entries %d ", histClus0R->GetName(), (int)histClus0R->GetEntries()), "f");
     legendR->AddEntry(histClus1R, Form("%s: entries %d ", histClus1R->GetName(), (int)histClus1R->GetEntries()), "f");
     legendR->AddEntry(histClus2R, Form("%s: entries %d ", histClus2R->GetName(), (int)histClus2R->GetEntries()), "f");
@@ -226,41 +201,39 @@ void plotClusters(const int startAt,
     auto canvasClustersZ = new TCanvas("ClustersZ", "Clusters data Z", 1600, 1000);
     canvasClustersZ->cd();
     histClus0Z->SetDirectory(0);
+    histClus0Z->GetYaxis()->SetMaxDigits(2);
     histClus0Z->Draw();
     histClus1Z->SetDirectory(0);
+    histClus1Z->GetYaxis()->SetMaxDigits(2);
     histClus1Z->Draw("same");
     histClus2Z->SetDirectory(0);
+    histClus2Z->GetYaxis()->SetMaxDigits(2);
     histClus2Z->Draw("same");
-    // gPad->Update();
-    // TPaveStats *st0Z = (TPaveStats *)histClus0Z->FindObject("stats");
-    // st0Z->SetX1NDC(0.1);
-    // st0Z->SetX2NDC(0.2);
-    // st0Z->SetY1NDC(0.8);
-    // st0Z->SetY2NDC(0.9);
-    // gPad->Update();
-    // TPaveStats *st1Z = (TPaveStats *)histClus1Z->FindObject("stats");
-    // st1Z->SetX1NDC(0.2);
-    // st1Z->SetX2NDC(0.3);
-    // st1Z->SetY1NDC(0.8);
-    // st1Z->SetY2NDC(0.9);
-    // gPad->Update();
-    // TPaveStats *st2Z = (TPaveStats *)histClus2Z->FindObject("stats");
-    // st2Z->SetX1NDC(0.3);
-    // st2Z->SetX2NDC(0.4);
-    // st2Z->SetY1NDC(0.8);
-    // st2Z->SetY2NDC(0.9);
 
     // Legend
     gStyle->SetLegendTextSize(0.);
-    auto legendZ = new TLegend(0.7, 0.8, 0.9, 0.9);
-    legendZ->AddEntry(histClus0Z,  Form("%s: entries %d ", histClus0Z->GetName(), (int)histClus0Z->GetEntries()), "f");
-    legendZ->AddEntry(histClus1Z,  Form("%s: entries %d ", histClus1Z->GetName(), (int)histClus1Z->GetEntries()), "f");
-    legendZ->AddEntry(histClus2Z,  Form("%s: entries %d ", histClus2Z->GetName(), (int)histClus2Z->GetEntries()), "f");
+    auto legendZ = new TLegend(0.3, 0.12, 0.7, 0.32);
+    legendZ->AddEntry(histClus0Z, Form("%s: entries %d ", histClus0Z->GetName(), (int)histClus0Z->GetEntries()), "f");
+    legendZ->AddEntry(histClus1Z, Form("%s: entries %d ", histClus1Z->GetName(), (int)histClus1Z->GetEntries()), "f");
+    legendZ->AddEntry(histClus2Z, Form("%s: entries %d ", histClus2Z->GetName(), (int)histClus2Z->GetEntries()), "f");
     legendZ->Draw();
+
+    ////////////////////
+    auto canvasRphi = new TCanvas("R vs phi", "R vs phi", 1600, 1000);
+    canvasRphi->SetGridy();
+    canvasRphi->cd();
+    rphi->SetDirectory(0);
+    gStyle->SetPalette(kInvertedDarkBodyRadiator);
+    rphi->Draw("colz");
 
     canvasClustersPhi->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersPhi.pdf", "r");
     canvasClustersR->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersR.pdf", "r");
     canvasClustersZ->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersZ.pdf", "r");
+    canvasClustersPhi->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersPhi.png", "r");
+    canvasClustersR->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersR.png", "r");
+    canvasClustersZ->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersZ.png", "r");
+    canvasRphi->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersRPhi.png", "r");
+    canvasRphi->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersRPhi.png", "r");
 }
 
 int plots(const int inspEvt = -1,
