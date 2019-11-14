@@ -92,8 +92,7 @@ void browsePtTrackInfoFromClusters(
     int number = static_cast<int>(rofRec.getNROFEntries());
     std::vector<o2::MCCompLabel> roLabels;
     std::vector<o2::MCTrack> roTracks;
-    if (!muted)
-      std::cerr << "ROframe: " << iRof << std::endl;
+    std::cerr << "ROframe: " << iRof << std::endl;
     auto clusters_in_frame = gsl::make_span(&(*clusters)[first], number);
 
     for (auto &c : clusters_in_frame)
