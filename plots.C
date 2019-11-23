@@ -15,12 +15,17 @@
 #include <TH1F.h>
 #include <TBranch.h>
 #include <TTreeReader.h>
+#include <TTree.h>
+#include <ROOT/RDataFrame.hxx>
+
+#include <unordered_map>
 
 #include "DataFormatsITSMFT/Cluster.h"
 #include "DataFormatsITSMFT/ROFRecord.h"
 #include "DataFormatsParameters/GRPObject.h"
 #include "SimulationDataFormat/MCEventHeader.h"
 #include "SimulationDataFormat/MCTruthContainer.h"
+#include "SimulationDataFormat/MCTrack.h"
 
 #include "ITSBase/GeometryTGeo.h"
 #include "ITStracking/IOUtils.h"
@@ -31,6 +36,7 @@
 #include "GPUChainITS.h"
 
 #endif
+
 namespace o2
 {
 namespace its
@@ -242,24 +248,6 @@ void plotClusters(const int startAt,
 
 void plotDBGCPU(TFile *dbgCPUFile)
 {
-    TTreeReader readerc01("combinatorics01", dbgCPUFile);
-    TTreeReaderValue<float> tanLambda01(readerc01, "tanLambda");
-    TTreeReaderValue<float> phi01(readerc01, "phi");
-
-    // while (readerc01.Next())
-    // {
-    //     // std::cout << *tanLambda << std::endl;
-    // }
-
-    TTreeReader readerc12("combinatorics12", dbgCPUFile);
-    TTreeReaderValue<float> tanLambda12(readerc12, "tanLambda");
-    TTreeReaderValue<float> phi12(readerc12, "phi");
-
-    // while (readerc12.Next())
-    // {
-    //     // std::cout << *tanLambda << std::endl;
-    // }
-
     TTreeReader readerST("selectedTracklets", dbgCPUFile);
     TTreeReaderValue<float> deltaTanLambdaST(readerST, "deltaTanlambda");
     TTreeReaderValue<float> deltaPhiST(readerST, "deltaPhi");
@@ -281,18 +269,44 @@ void plotDBGCPU(TFile *dbgCPUFile)
     canvasST->SetGrid();
     canvasST->cd();
     deltaPhi->SetDirectory(0);
-    deltaPhi->SetFillColor(kBlack);
+    deltaPhi->SetLineColor(kBlack);
+    deltaPhi->SetFillColor(kBlue - 8);
     deltaPhi->SetFillStyle(3015);
     deltaPhi->GetYaxis()->SetNdivisions(10);
     deltaPhi->GetYaxis()->SetMaxDigits(2);
     deltaPhi->Draw();
 
     auto canvasDZ = new TCanvas("deltaZ", "deltaZ");
+    canvasDZ->SetLogy();
     canvasDZ->SetGrid();
     canvasDZ->cd();
     deltaZ->SetDirectory(0);
+    deltaZ->SetLineColor(kBlack);
+    deltaZ->SetFillColor(kBlue - 8);
+    deltaZ->SetFillStyle(3015);
     deltaZ->GetYaxis()->SetMaxDigits(2);
     deltaZ->Draw();
+}
+
+std::unordered_map<o2::MCCompLabel, o2::MCTrack> getLabelToTrackMap(TFile *file)
+{
+    std::unordered_map<o2::MCCompLabel, o2::MCTrack> umap;
+    TTreeReader readerl2T("Labels2Tracks", file);
+    TTreeReaderValue<std::vector<o2::MCCompLabel>> labels(readerl2T, "MCLabels");
+    TTreeReaderValue<std::vector<o2::MCTrack>> tracks(readerl2T, "Tracks");
+    int count{0};
+    while (readerl2T.Next())
+    {
+        std::cout << "yea! " << count << std::endl;
+        ++count;
+        for (size_t i{0}; i < (*labels).size(); ++i)
+        {
+            umap.emplace((*labels)[i], (*tracks)[i]);
+            std::cout << "filled!\n";
+        }
+    }
+
+    return umap;
 }
 
 int plots(const int inspEvt = -1,
@@ -302,6 +316,7 @@ int plots(const int inspEvt = -1,
           const std::string simfilename = "o2sim.root",
           const std::string paramfilename = "O2geometry.root",
           const std::string dbgcpufilename = "dbg_ITSVertexerCPU.root",
+          const std::string labl2trackinfofilename = "label2Track0.root",
           const std::string path = "./")
 {
     // file load and stuff
@@ -340,6 +355,14 @@ int plots(const int inspEvt = -1,
     // dbg CPU
     TFile dbgCPUFile((path + dbgcpufilename).data());
 
+    // labels to tracks
+    TFile l2tiFile((path + labl2trackinfofilename).data());
+    // TTree* l2tiTree = (TTree*) dbgCPUFile.Get("Labels2Tracks");
+
+    // ROOT::EnableImplicitMT(); // Tell ROOT you want to go parallel
+    // ROOT::RDataFrame d1("Labels2Tracks", (path + labl2trackinfofilename).data(), {"MCLabels","Tracks"});
+    // d1.Foreach([](){});
+
     // auto bC01 = (TBranch *)dbgCPUFile.Get("combinatorics01");
 
     // config
@@ -354,6 +377,7 @@ int plots(const int inspEvt = -1,
     // Hereafter: direct calls to plotting functions
     // plotClusters(startAt, stopAt, rofs, clusters, labels);
     plotDBGCPU(&dbgCPUFile);
+    getLabelToTrackMap(&l2tiFile);
 
     return 0;
 }
