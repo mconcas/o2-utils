@@ -11,12 +11,21 @@
 #include <TStyle.h>
 #include <TPaveStats.h>
 #include <TH2D.h>
+#include <TH2F.h>
+#include <TH1F.h>
+#include <TBranch.h>
+#include <TTreeReader.h>
+#include <TTree.h>
+#include <ROOT/RDataFrame.hxx>
+
+#include <unordered_map>
 
 #include "DataFormatsITSMFT/Cluster.h"
 #include "DataFormatsITSMFT/ROFRecord.h"
 #include "DataFormatsParameters/GRPObject.h"
 #include "SimulationDataFormat/MCEventHeader.h"
 #include "SimulationDataFormat/MCTruthContainer.h"
+#include "SimulationDataFormat/MCTrack.h"
 
 #include "ITSBase/GeometryTGeo.h"
 #include "ITStracking/IOUtils.h"
@@ -27,6 +36,7 @@
 #include "GPUChainITS.h"
 
 #endif
+
 namespace o2
 {
 namespace its
@@ -236,15 +246,80 @@ void plotClusters(const int startAt,
     canvasRphi->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersRPhi.png", "r");
 }
 
+void plotDBGCPU(TFile *dbgCPUFile)
+{
+    TTreeReader readerST("selectedTracklets", dbgCPUFile);
+    TTreeReaderValue<float> deltaTanLambdaST(readerST, "deltaTanlambda");
+    TTreeReaderValue<float> deltaPhiST(readerST, "deltaPhi");
+    TTreeReaderValue<float> c0z(readerST, "cluster0z");
+    TTreeReaderValue<float> c1z(readerST, "cluster1z");
+    TTreeReaderValue<float> c0phi(readerST, "cluster0phi");
+    TTreeReaderValue<float> c1phi(readerST, "cluster1phi");
+
+    TH1F *deltaPhi = new TH1F("deltaPhi", "#Delta#phi, 150 PbPb minBias; #Delta#phi (rad); N_{entries}", 200, 0.f, 0.01f);
+    TH1F *deltaZ = new TH1F("deltaZ", "#DeltaZ, 150 PbPb minBias; #DeltaZ (cm); N_{entries}", 200, -35.f, 35.f);
+    while (readerST.Next())
+    {
+        deltaPhi->Fill(TMath::Abs((*c0phi) - (*c1phi)));
+        deltaZ->Fill((*c0z) - (*c1z));
+    }
+
+    // Draw section
+    auto canvasST = new TCanvas("deltaPhi", "deltaPhi");
+    canvasST->SetGrid();
+    canvasST->cd();
+    deltaPhi->SetDirectory(0);
+    deltaPhi->SetLineColor(kBlack);
+    deltaPhi->SetFillColor(kBlue - 8);
+    deltaPhi->SetFillStyle(3015);
+    deltaPhi->GetYaxis()->SetNdivisions(10);
+    deltaPhi->GetYaxis()->SetMaxDigits(2);
+    deltaPhi->Draw();
+
+    auto canvasDZ = new TCanvas("deltaZ", "deltaZ");
+    canvasDZ->SetLogy();
+    canvasDZ->SetGrid();
+    canvasDZ->cd();
+    deltaZ->SetDirectory(0);
+    deltaZ->SetLineColor(kBlack);
+    deltaZ->SetFillColor(kBlue - 8);
+    deltaZ->SetFillStyle(3015);
+    deltaZ->GetYaxis()->SetMaxDigits(2);
+    deltaZ->Draw();
+}
+
+std::unordered_map<o2::MCCompLabel, o2::MCTrack> getLabelToTrackMap(TFile *file)
+{
+    std::unordered_map<o2::MCCompLabel, o2::MCTrack> umap;
+    TTreeReader readerl2T("Labels2Tracks", file);
+    TTreeReaderValue<std::vector<o2::MCCompLabel>> labels(readerl2T, "MCLabels");
+    TTreeReaderValue<std::vector<o2::MCTrack>> tracks(readerl2T, "Tracks");
+    int count{0};
+    while (readerl2T.Next())
+    {
+        std::cout << "yea! " << count << std::endl;
+        ++count;
+        for (size_t i{0}; i < (*labels).size(); ++i)
+        {
+            umap.emplace((*labels)[i], (*tracks)[i]);
+            std::cout << "filled!\n";
+        }
+    }
+
+    return umap;
+}
+
 int plots(const int inspEvt = -1,
           const int numEvents = 1,
           const std::string inputClustersITS = "o2clus_its.root",
           const std::string inputGRP = "o2sim_grp.root",
           const std::string simfilename = "o2sim.root",
           const std::string paramfilename = "O2geometry.root",
+          const std::string dbgcpufilename = "dbg_ITSVertexerCPU.root",
+          const std::string labl2trackinfofilename = "label2Track0.root",
           const std::string path = "./")
 {
-
+    // file load and stuff
     const auto grp = o2::parameters::GRPObject::loadFrom(path + inputGRP);
     const bool isITS = grp->isDetReadOut(o2::detectors::DetID::ITS);
     const bool isContITS = grp->isDetContinuousReadOut(o2::detectors::DetID::ITS);
@@ -259,6 +334,7 @@ int plots(const int inspEvt = -1,
     gman->fillMatrixCache(o2::utils::bit2Mask(o2::TransformType::T2L, o2::TransformType::T2GRot,
                                               o2::TransformType::L2G)); // request cached transforms
 
+    // o2sim
     TChain mcHeaderTree("o2sim");
     mcHeaderTree.AddFile((path + simfilename).data());
     o2::dataformats::MCEventHeader *mcHeader = nullptr;
@@ -272,18 +348,36 @@ int plots(const int inspEvt = -1,
 
     std::vector<o2::itsmft::ROFRecord> *rofs = nullptr;
     itsClustersROF.SetBranchAddress("ITSClustersROF", &rofs);
-    itsClustersROF.GetEntry(0);
 
     o2::dataformats::MCTruthContainer<o2::MCCompLabel> *labels = nullptr;
     itsClusters.SetBranchAddress("ITSClusterMCTruth", &labels);
 
+    // dbg CPU
+    TFile dbgCPUFile((path + dbgcpufilename).data());
+
+    // labels to tracks
+    TFile l2tiFile((path + labl2trackinfofilename).data());
+    // TTree* l2tiTree = (TTree*) dbgCPUFile.Get("Labels2Tracks");
+
+    // ROOT::EnableImplicitMT(); // Tell ROOT you want to go parallel
+    // ROOT::RDataFrame d1("Labels2Tracks", (path + labl2trackinfofilename).data(), {"MCLabels","Tracks"});
+    // d1.Foreach([](){});
+
+    // auto bC01 = (TBranch *)dbgCPUFile.Get("combinatorics01");
+
+    // config
     const int stopAt = (inspEvt == -1) ? rofs->size() : inspEvt + numEvents;
     const int startAt = (inspEvt == -1) ? 0 : inspEvt;
 
     itsClusters.GetEntry(0);
     mcHeaderTree.GetEntry(0);
+    itsClustersROF.GetEntry(0);
+    // bC01->GetEntry(0);
 
-    plotClusters(startAt, stopAt, rofs, clusters, labels);
+    // Hereafter: direct calls to plotting functions
+    // plotClusters(startAt, stopAt, rofs, clusters, labels);
+    plotDBGCPU(&dbgCPUFile);
+    getLabelToTrackMap(&l2tiFile);
 
     return 0;
 }
