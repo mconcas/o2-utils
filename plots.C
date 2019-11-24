@@ -77,11 +77,11 @@ void plotClusters(const int startAt,
     std::array<std::vector<o2::its::Cluster>, o2::its::constants::its::LayersNumberVertexer> itsclusters;
     gStyle->SetOptStat(0);
     TH1F *histClus0Phi =
-        new TH1F("Layer 0", "Azimuthal angle #phi, 150 PbPb evts minBias;#phi (rad); N_{clusters}", 400, 0.f, TMath::TwoPi());
+        new TH1F("Layer 0", "Azimuthal angle #phi, 150 events PbPb minBias;#phi (rad); N_{clusters}", 400, 0.f, TMath::TwoPi());
     TH1F *histClus0R =
-        new TH1F("Layer 0", "Radial coordinate R, 150 PbPb evts minBias;R (cm); N_{clusters}", 400, 2.f, 4.5f);
+        new TH1F("Layer 0", "Radial coordinate R, 150 events PbPb minBias;R (cm); N_{clusters}", 400, 2.f, 4.5f);
     TH1F *histClus0Z =
-        new TH1F("Layer 0", "Z coordinate, 150 PbPb evts minBias;z (cm); N_{clusters}", 500, -15.5f, 15.5f);
+        new TH1F("Layer 0", "Z coordinate, 150 events PbPb minBias;z (cm); N_{clusters}", 500, -15.5f, 15.5f);
 
     // Setup histograms
     histClus0Phi->SetMinimum(0);
@@ -97,11 +97,11 @@ void plotClusters(const int startAt,
     histClus0Z->SetFillStyle(1001);
 
     TH1F *histClus1Phi =
-        new TH1F("Layer 1", "Azimuthal angle #phi, 150 PbPb evts minBias;#phi (rad); N_{clusters}", 400, 0.f, TMath::TwoPi());
+        new TH1F("Layer 1", "Azimuthal angle #phi, 150 events PbPb minBias;#phi (rad); N_{clusters}", 400, 0.f, TMath::TwoPi());
     TH1F *histClus1R =
-        new TH1F("Layer 1", "Radial coordinate R, 150 PbPb evts minBias;R (cm); N_{clusters}", 400, 2.f, 4.5f);
+        new TH1F("Layer 1", "Radial coordinate R, 150 events PbPb minBias;R (cm); N_{clusters}", 400, 2.f, 4.5f);
     TH1F *histClus1Z =
-        new TH1F("Layer 1", "Z coordinate Z, 150 PbPb evts minBias;z (cm); N_{clusters}", 500, -16.5f, 16.5f);
+        new TH1F("Layer 1", "Z coordinate Z, 150 events PbPb minBias;z (cm); N_{clusters}", 500, -16.5f, 16.5f);
 
     histClus1Phi->SetFillColor(TColor::GetColor("#E4572E"));
     histClus1Phi->SetLineColor(TColor::GetColor("#E4572E"));
@@ -114,11 +114,11 @@ void plotClusters(const int startAt,
     histClus1Z->SetFillStyle(1001);
 
     TH1F *histClus2Phi =
-        new TH1F("Layer 2", "Azimuthal angle #phi, 150 PbPb evts minBias;#phi (rad); N_{clusters}", 400, 0.f, TMath::TwoPi());
+        new TH1F("Layer 2", "Azimuthal angle #phi, 150 events PbPb minBias;#phi (rad); N_{clusters}", 400, 0.f, TMath::TwoPi());
     TH1F *histClus2R =
-        new TH1F("Layer 2", "Radial coordinate R, 150 PbPb evts minBias;R (cm); N_{clusters}", 400, 2.f, 4.5f);
+        new TH1F("Layer 2", "Radial coordinate R, 150 events PbPb minBias;R (cm); N_{clusters}", 400, 2.f, 4.5f);
     TH1F *histClus2Z =
-        new TH1F("Layer 2", "Z coordinate Z, 150 PbPb evts minBias;z (cm); N_{clusters}", 500, -16.5f, 16.5f);
+        new TH1F("Layer 2", "Z coordinate Z, 150 events PbPb minBias;z (cm); N_{clusters}", 500, -16.5f, 16.5f);
     histClus1Phi->SetMinimum(0);
     histClus2Phi->SetFillColor(TColor::GetColor("#F3A712"));
     histClus2Phi->SetLineColor(TColor::GetColor("#F3A712"));
@@ -131,7 +131,7 @@ void plotClusters(const int startAt,
     histClus2Z->SetLineColor(TColor::GetColor("#F3A712"));
     histClus2Z->SetFillStyle(1001);
 
-    TH2D *rphi = new TH2D("R-#phi", "R vs #phi, 150 PbPb evts minBias; #phi (rad); R (cm)", 400, 0.f, TMath::TwoPi(), 400, 2.f, 4.2f);
+    TH2D *rphi = new TH2D("R-#phi", "R vs #phi, 150 events PbPb minBias; #phi (rad); R (cm)", 400, 0.f, TMath::TwoPi(), 400, 2.f, 4.2f);
 
     for (int iROfCount{startAt}; iROfCount < stopAt; ++iROfCount)
     {
@@ -139,7 +139,7 @@ void plotClusters(const int startAt,
             layer.clear();
         auto &rof = (*rofs)[iROfCount];
         o2::its::ROframe frame{iROfCount}; // to get meaningful roframeId
-        std::cout << "ROframe: " << iROfCount << std::endl;
+        // std::cout << "ROframe: " << iROfCount << std::endl;
         int nclUsed = o2::its::ioutils::loadROFrameData(rof, frame, clusters, labels);
         o2::its::arrangeClusters(&frame, itsclusters);
 
@@ -271,17 +271,24 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
     TTreeReaderValue<float> deltaPhiST(readerST, "deltaPhi");
     TTreeReaderValue<float> c0z(readerST, "cluster0z");
     TTreeReaderValue<float> c1z(readerST, "cluster1z");
+    TTreeReaderValue<float> c2z(readerST, "cluster2z");
+    TTreeReaderValue<float> c0r(readerST, "cluster0r");
+    TTreeReaderValue<float> c1r(readerST, "cluster1r");
+    TTreeReaderValue<float> c2r(readerST, "cluster2r");
     TTreeReaderValue<float> c0phi(readerST, "cluster0phi");
     TTreeReaderValue<float> c1phi(readerST, "cluster1phi");
+    // TTreeReaderValue<float> c2phi(readerST, "cluster2phi");
     TTreeReaderValue<o2::MCCompLabel> labels0(readerST, "lblClus0");
     auto umap = getLabelToTrackMap(l2tiFile);
 
     // Histos
-    TH1F *deltaPhi = new TH1F("deltaPhi", "#Delta#phi, 150 PbPb minBias; #Delta#phi (rad); N_{entries}", 200, 0.f, 0.01f);
-    TH1F *deltaZ = new TH1F("deltaZ", "#DeltaZ, 150 PbPb minBias; #DeltaZ (cm); N_{entries}", 200, -35.f, 35.f);
-    TH1F *pTdist = new TH1F("pTdistribution", "#pi^{#pm} #it{p}_{T} distribution, 150 PbPb minBias; #it{p}_{T} (GeV/c); N_{entries}", 400, 0.f, 5.f);
-    TH2F *deltaPhiPt = new TH2F("deltaPhiPt", "#it{p}_{T} vs #Delta#phi, 150 PbPb minBias; #it{p}_{T} (GeV/c); #Delta#phi (rad)", 400, 0.f, 5.f, 400, 0.f, 0.01f);
-    TH2F *deltaZPt = new TH2F("deltaZPt", "#it{p}_{T} vs #DeltaZ, 150 PbPb minBias; #it{p}_{T} (GeV/c); #DeltaZ (cm)", 400, 0.f, 5.f, 400, -30.f, 30.f);
+    TH1F *deltaPhi = new TH1F("deltaPhi", "Clusters: #Delta#phi, 150 events PbPb minBias; #Delta#phi (rad); N_{entries}", 200, 0.f, 0.01f);
+    TH1F *deltaZ = new TH1F("deltaZ", "Clusters: #DeltaZ, 150 events PbPb minBias; #DeltaZ (cm); N_{entries}", 200, -35.f, 35.f);
+    TH1F *pTdist = new TH1F("pTdistribution", "#pi^{#pm} #it{p}_{T} distribution, 150 events PbPb minBias; #it{p}_{T} (GeV/c); N_{entries}", 400, 0.f, 5.f);
+    TH2F *cluDeltaPhiPt = new TH2F("cluDeltaPhiPt", "Clusters: #it{p}_{T} vs #Delta#phi, 150 events PbPb minBias; #it{p}_{T} (GeV/c); #Delta#phi (rad)", 400, 0.f, 5.f, 400, 0.f, 0.01f);
+    TH2F *cluDeltaZPt = new TH2F("cluDeltaZPt", "Clusters: #DeltaZ vs #it{p}_{T}, 150 events PbPb minBias; #it{p}_{T} (GeV/c); #DeltaZ (cm)", 400, 0.f, 5.f, 400, -10.f, 10.f);
+    TH2F *trkDeltaPhiPt = new TH2F("trkDeltaPhiPt", "Tracklets: #Delta#phi vs #it{p}_{T}, 150 events PbPb minBias; #it{p}_{T} (GeV/c); #Delta#phi (rad)", 400, 0.f, 5.f, 400, -0.1f, 0.1f);
+    TH2F *trkDeltaLambdaPt = new TH2F("trkDeltaLambdaPt", "#pi_{tracklets}^{#pm} #it{p}_{T} vs #Delta#lambda, 150 events PbPb minBias; #Delta#lambda; #it{p}_{T} (GeV/c)", 400, -TMath::Pi()*0.01, TMath::Pi()*0.01, 400, 0.f, 5.f);
 
     while (readerST.Next())
     {
@@ -289,19 +296,23 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
 
         if (it->second.getMotherTrackId() == -1 /*&& TMath::Abs(it->second.GetPdgCode()) != 211*/)
         {
+            // Only primaries
             deltaPhi->Fill(TMath::Abs((*c0phi) - (*c1phi)));
             deltaZ->Fill((*c0z) - (*c1z));
-
-            deltaPhiPt->Fill(it->second.GetPt(), TMath::Abs((*c0phi) - (*c1phi)));
-            deltaZPt->Fill(it->second.GetPt(), (*c0z) - (*c1z));
+            cluDeltaPhiPt->Fill(it->second.GetPt(), TMath::Abs((*c0phi) - (*c1phi)));
+            cluDeltaZPt->Fill(it->second.GetPt(), (*c0z) - (*c1z));
+            // Only pions
             if (TMath::Abs(it->second.GetPdgCode()) == 211)
             {
                 pTdist->Fill(it->second.GetPt());
+                trkDeltaPhiPt->Fill(it->second.GetPt(), *deltaPhiST);
+                trkDeltaLambdaPt->Fill(TMath::ATan2((*c1z - *c0z), (*c1r - *c0r)) - TMath::ATan2((*c2z - *c1z), (*c2r - *c1r)), it->second.GetPt());
             }
         }
     }
 
     // Draw section
+    gStyle->SetPalette(kBird);
     auto canvasST = new TCanvas("deltaPhi", "deltaPhi", 800, 600);
     canvasST->SetGrid();
     canvasST->cd();
@@ -339,21 +350,35 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
     // canvasPtPhi->SetLogy();
     canvasPtPhi->SetGrid();
     canvasPtPhi->cd();
-    deltaPhiPt->SetDirectory(0);
-    deltaPhiPt->Draw("colz");
+    cluDeltaPhiPt->SetDirectory(0);
+    cluDeltaPhiPt->Draw("colz");
 
-    auto canvasPtZ = new TCanvas("deltaPtZ", "deltaPtZ", 800, 600);
-    // canvasPtZ->SetLogy();
-    canvasPtZ->SetGrid();
-    canvasPtZ->cd();
-    deltaZPt->SetDirectory(0);
-    deltaZPt->Draw("colz");
+    auto canvasClusPtZ = new TCanvas("cluDeltaPtZ", "cluDeltaPtZ", 800, 600);
+    canvasClusPtZ->SetGrid();
+    canvasClusPtZ->cd();
+    cluDeltaZPt->SetDirectory(0);
+    cluDeltaZPt->Draw("colz");
+
+    auto canvasTrackPtDeltaLambda = new TCanvas("trkDeltaLambdaPt", "trkDeltaLambdaPt", 800, 600);
+    canvasTrackPtDeltaLambda->SetGrid();
+    canvasTrackPtDeltaLambda->cd();
+    // canvasTrackPtDeltaLambda->SetLogy();
+    trkDeltaLambdaPt->SetDirectory(0);
+    trkDeltaLambdaPt->Draw("colz");
+
+    auto canvasTrackPtPhi = new TCanvas("trkDeltaZPt", "trkDeltaZPt", 800, 600);
+    canvasTrackPtPhi->SetGrid();
+    canvasTrackPtPhi->cd();
+    trkDeltaPhiPt->SetDirectory(0);
+    trkDeltaPhiPt->Draw("colz");
 
     canvasST->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersDeltaPhi.png", "r");
     canvasDZ->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersDeltaZeta.png", "r");
     canvasPt->SaveAs("/home/mconcas/cernbox/thesis_pictures/clusters0Pt.png", "r");
     canvasPtPhi->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersPtvsDeltaPhi.png", "r");
-    canvasPtZ->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersPtvsDeltaZ.png", "r");
+    canvasClusPtZ->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersPtvsDeltaZ.png", "r");
+    canvasTrackPtPhi->SaveAs("/home/mconcas/cernbox/thesis_pictures/trackletsPtvsDeltaPhi.png", "r");
+    canvasTrackPtDeltaLambda->SaveAs("/home/mconcas/cernbox/thesis_pictures/trackletsPtvsDeltaZ.png", "r");
 }
 
 int plots(const int inspEvt = -1,
@@ -395,6 +420,7 @@ int plots(const int inspEvt = -1,
 
     std::vector<o2::itsmft::ROFRecord> *rofs = nullptr;
     itsClustersROF.SetBranchAddress("ITSClustersROF", &rofs);
+    itsClustersROF.GetEntry(0);
 
     o2::dataformats::MCTruthContainer<o2::MCCompLabel> *labels = nullptr;
     itsClusters.SetBranchAddress("ITSClusterMCTruth", &labels);
@@ -418,11 +444,11 @@ int plots(const int inspEvt = -1,
 
     itsClusters.GetEntry(0);
     mcHeaderTree.GetEntry(0);
-    itsClustersROF.GetEntry(0);
+
     // bC01->GetEntry(0);
 
     // Hereafter: direct calls to plotting functions
-    // plotClusters(startAt, stopAt, rofs, clusters, labels);
+    plotClusters(startAt, stopAt, rofs, clusters, labels);
     plotDBGCPU(&dbgCPUFile, &l2tiFile);
 
     return 0;
