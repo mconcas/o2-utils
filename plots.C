@@ -246,8 +246,26 @@ void plotClusters(const int startAt,
     canvasRphi->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersRPhi.png", "r");
 }
 
-void plotDBGCPU(TFile *dbgCPUFile)
+std::unordered_map<o2::MCCompLabel, o2::MCTrack> getLabelToTrackMap(TFile *file)
 {
+    std::unordered_map<o2::MCCompLabel, o2::MCTrack> umap;
+    TTreeReader readerl2T("Labels2Tracks", file);
+    TTreeReaderValue<std::vector<o2::MCCompLabel>> labels(readerl2T, "MCLabels");
+    TTreeReaderValue<std::vector<o2::MCTrack>> tracks(readerl2T, "Tracks");
+    while (readerl2T.Next())
+    {
+        for (size_t i{0}; i < (*labels).size(); ++i)
+        {
+            umap.emplace((*labels)[i], (*tracks)[i]);
+        }
+    }
+
+    return umap;
+}
+
+void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
+{
+    gStyle->SetOptStat(0);
     TTreeReader readerST("selectedTracklets", dbgCPUFile);
     TTreeReaderValue<float> deltaTanLambdaST(readerST, "deltaTanlambda");
     TTreeReaderValue<float> deltaPhiST(readerST, "deltaPhi");
@@ -255,17 +273,36 @@ void plotDBGCPU(TFile *dbgCPUFile)
     TTreeReaderValue<float> c1z(readerST, "cluster1z");
     TTreeReaderValue<float> c0phi(readerST, "cluster0phi");
     TTreeReaderValue<float> c1phi(readerST, "cluster1phi");
+    TTreeReaderValue<o2::MCCompLabel> labels0(readerST, "lblClus0");
+    auto umap = getLabelToTrackMap(l2tiFile);
 
+    // Histos
     TH1F *deltaPhi = new TH1F("deltaPhi", "#Delta#phi, 150 PbPb minBias; #Delta#phi (rad); N_{entries}", 200, 0.f, 0.01f);
     TH1F *deltaZ = new TH1F("deltaZ", "#DeltaZ, 150 PbPb minBias; #DeltaZ (cm); N_{entries}", 200, -35.f, 35.f);
+    TH1F *pTdist = new TH1F("pTdistribution", "#pi^{#pm} #it{p}_{T} distribution, 150 PbPb minBias; #it{p}_{T} (GeV/c); N_{entries}", 400, 0.f, 5.f);
+    TH2F *deltaPhiPt = new TH2F("deltaPhiPt", "#it{p}_{T} vs #Delta#phi, 150 PbPb minBias; #it{p}_{T} (GeV/c); #Delta#phi (rad)", 400, 0.f, 5.f, 400, 0.f, 0.01f);
+    TH2F *deltaZPt = new TH2F("deltaZPt", "#it{p}_{T} vs #DeltaZ, 150 PbPb minBias; #it{p}_{T} (GeV/c); #DeltaZ (cm)", 400, 0.f, 5.f, 400, -30.f, 30.f);
+
     while (readerST.Next())
     {
-        deltaPhi->Fill(TMath::Abs((*c0phi) - (*c1phi)));
-        deltaZ->Fill((*c0z) - (*c1z));
+        auto it = umap.find(*labels0);
+
+        if (it->second.getMotherTrackId() == -1 /*&& TMath::Abs(it->second.GetPdgCode()) != 211*/)
+        {
+            deltaPhi->Fill(TMath::Abs((*c0phi) - (*c1phi)));
+            deltaZ->Fill((*c0z) - (*c1z));
+
+            deltaPhiPt->Fill(it->second.GetPt(), TMath::Abs((*c0phi) - (*c1phi)));
+            deltaZPt->Fill(it->second.GetPt(), (*c0z) - (*c1z));
+            if (TMath::Abs(it->second.GetPdgCode()) == 211)
+            {
+                pTdist->Fill(it->second.GetPt());
+            }
+        }
     }
 
     // Draw section
-    auto canvasST = new TCanvas("deltaPhi", "deltaPhi");
+    auto canvasST = new TCanvas("deltaPhi", "deltaPhi", 800, 600);
     canvasST->SetGrid();
     canvasST->cd();
     deltaPhi->SetDirectory(0);
@@ -276,7 +313,7 @@ void plotDBGCPU(TFile *dbgCPUFile)
     deltaPhi->GetYaxis()->SetMaxDigits(2);
     deltaPhi->Draw();
 
-    auto canvasDZ = new TCanvas("deltaZ", "deltaZ");
+    auto canvasDZ = new TCanvas("deltaZ", "deltaZ", 800, 600);
     canvasDZ->SetLogy();
     canvasDZ->SetGrid();
     canvasDZ->cd();
@@ -286,27 +323,37 @@ void plotDBGCPU(TFile *dbgCPUFile)
     deltaZ->SetFillStyle(3015);
     deltaZ->GetYaxis()->SetMaxDigits(2);
     deltaZ->Draw();
-}
 
-std::unordered_map<o2::MCCompLabel, o2::MCTrack> getLabelToTrackMap(TFile *file)
-{
-    std::unordered_map<o2::MCCompLabel, o2::MCTrack> umap;
-    TTreeReader readerl2T("Labels2Tracks", file);
-    TTreeReaderValue<std::vector<o2::MCCompLabel>> labels(readerl2T, "MCLabels");
-    TTreeReaderValue<std::vector<o2::MCTrack>> tracks(readerl2T, "Tracks");
-    int count{0};
-    while (readerl2T.Next())
-    {
-        std::cout << "yea! " << count << std::endl;
-        ++count;
-        for (size_t i{0}; i < (*labels).size(); ++i)
-        {
-            umap.emplace((*labels)[i], (*tracks)[i]);
-            std::cout << "filled!\n";
-        }
-    }
+    auto canvasPt = new TCanvas("PiPt", "PiPt", 800, 600);
+    // canvasPt->SetLogy();
+    canvasPt->SetGrid();
+    canvasPt->cd();
+    pTdist->SetDirectory(0);
+    pTdist->SetLineColor(kBlack);
+    pTdist->SetFillColor(kBlue - 8);
+    pTdist->SetFillStyle(3015);
+    pTdist->GetYaxis()->SetMaxDigits(2);
+    pTdist->Draw();
 
-    return umap;
+    auto canvasPtPhi = new TCanvas("deltaPtPhi", "deltaPtPhi", 800, 600);
+    // canvasPtPhi->SetLogy();
+    canvasPtPhi->SetGrid();
+    canvasPtPhi->cd();
+    deltaPhiPt->SetDirectory(0);
+    deltaPhiPt->Draw("colz");
+
+    auto canvasPtZ = new TCanvas("deltaPtZ", "deltaPtZ", 800, 600);
+    // canvasPtZ->SetLogy();
+    canvasPtZ->SetGrid();
+    canvasPtZ->cd();
+    deltaZPt->SetDirectory(0);
+    deltaZPt->Draw("colz");
+
+    canvasST->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersDeltaPhi.png", "r");
+    canvasDZ->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersDeltaZeta.png", "r");
+    canvasPt->SaveAs("/home/mconcas/cernbox/thesis_pictures/clusters0Pt.png", "r");
+    canvasPtPhi->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersPtvsDeltaPhi.png", "r");
+    canvasPtZ->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersPtvsDeltaZ.png", "r");
 }
 
 int plots(const int inspEvt = -1,
@@ -376,8 +423,7 @@ int plots(const int inspEvt = -1,
 
     // Hereafter: direct calls to plotting functions
     // plotClusters(startAt, stopAt, rofs, clusters, labels);
-    plotDBGCPU(&dbgCPUFile);
-    getLabelToTrackMap(&l2tiFile);
+    plotDBGCPU(&dbgCPUFile, &l2tiFile);
 
     return 0;
 }
