@@ -19,6 +19,7 @@
 #include <ROOT/RDataFrame.hxx>
 
 #include <unordered_map>
+#include <list>
 
 #include "DataFormatsITSMFT/Cluster.h"
 #include "DataFormatsITSMFT/ROFRecord.h"
@@ -279,6 +280,7 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
     TTreeReaderValue<float> c1phi(readerST, "cluster1phi");
     // TTreeReaderValue<float> c2phi(readerST, "cluster2phi");
     TTreeReaderValue<o2::MCCompLabel> labels0(readerST, "lblClus0");
+    TTreeReaderValue<o2::MCCompLabel> labels2(readerST, "lblClus2");
     auto umap = getLabelToTrackMap(l2tiFile);
 
     // Histos
@@ -287,15 +289,18 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
     TH1F *pTdist = new TH1F("pTdistribution", "#pi^{#pm} #it{p}_{T} distribution, 150 events PbPb minBias; #it{p}_{T} (GeV/c); N_{entries}", 400, 0.f, 5.f);
     TH2F *cluDeltaPhiPt = new TH2F("cluDeltaPhiPt", "Clusters: #it{p}_{T} vs #Delta#phi, 150 events PbPb minBias; #it{p}_{T} (GeV/c); #Delta#phi (rad)", 400, 0.f, 5.f, 400, 0.f, 0.01f);
     TH2F *cluDeltaZPt = new TH2F("cluDeltaZPt", "Clusters: #DeltaZ vs #it{p}_{T}, 150 events PbPb minBias; #it{p}_{T} (GeV/c); #DeltaZ (cm)", 400, 0.f, 5.f, 400, -10.f, 10.f);
-    TH2F *trkDeltaPhiPt = new TH2F("trkDeltaPhiPt", "Tracklets: #Delta#phi vs #it{p}_{T}, 150 events PbPb minBias; #it{p}_{T} (GeV/c); #Delta#phi (rad)", 400, 0.f, 5.f, 400, -0.1f, 0.1f);
-    TH2F *trkDeltaLambdaPt = new TH2F("trkDeltaLambdaPt", "#pi_{tracklets}^{#pm} #it{p}_{T} vs #Delta#lambda, 150 events PbPb minBias; #Delta#lambda; #it{p}_{T} (GeV/c)", 400, -TMath::Pi()*0.01, TMath::Pi()*0.01, 400, 0.f, 5.f);
+    TH2F *trkDeltaPhiPt = new TH2F("trkDeltaPhiPt", "Tracklets: #Delta#phi vs #it{p}_{T}, 150 events PbPb minBias; #it{p}_{T} (GeV/c); #Delta#phi (rad)", 400, 0.f, 5.f, 400, -TMath::Pi(), TMath::Pi());
+    TH2F *trkDeltaLambdaPt = new TH2F("trkDeltaLambdaPt", "#pi_{tracklets}^{#pm} #it{p}_{T} vs #Delta#lambda, 150 events PbPb minBias; #Delta#lambda; #it{p}_{T} (GeV/c)", 40000, -TMath::Pi(), TMath::Pi(), 400, 0.f, 5.f);
+
+    // TH2F *test = new TH2F("test", "#pi_{tracklets}^{#pm} #it{p}_{T} vs #Delta#lambda, 150 events PbPb minBias; #Delta#phi; #Delta#lambda", 4000, -TMath::Pi(), TMath::Pi(), 4000, -TMath::Pi(), TMath::Pi());
 
     while (readerST.Next())
     {
         auto it = umap.find(*labels0);
 
-        if (it->second.getMotherTrackId() == -1 /*&& TMath::Abs(it->second.GetPdgCode()) != 211*/)
+        if (it != umap.end() && it->second.getMotherTrackId() == -1)
         {
+
             // Only primaries
             deltaPhi->Fill(TMath::Abs((*c0phi) - (*c1phi)));
             deltaZ->Fill((*c0z) - (*c1z));
@@ -307,7 +312,12 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
                 pTdist->Fill(it->second.GetPt());
                 trkDeltaPhiPt->Fill(it->second.GetPt(), *deltaPhiST);
                 trkDeltaLambdaPt->Fill(TMath::ATan2((*c1z - *c0z), (*c1r - *c0r)) - TMath::ATan2((*c2z - *c1z), (*c2r - *c1r)), it->second.GetPt());
+                if (it->second.GetPt() < 0.2 && it->second.GetPt() > 0.1)
+                {
+                    test->Fill(*deltaPhiST, TMath::ATan2((*c1z - *c0z), (*c1r - *c0r)) - TMath::ATan2((*c2z - *c1z), (*c2r - *c1r)), it->second.GetPt());
+                }
             }
+            umap.erase(it);
         }
     }
 
@@ -372,6 +382,12 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
     trkDeltaPhiPt->SetDirectory(0);
     trkDeltaPhiPt->Draw("colz");
 
+    // auto canvasTest = new TCanvas("test", "test", 800, 600);
+    // canvasTest->SetGrid();
+    // canvasTest->cd();
+    // test->SetDirectory(0);
+    // test->Draw("colz");
+
     canvasST->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersDeltaPhi.png", "r");
     canvasDZ->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersDeltaZeta.png", "r");
     canvasPt->SaveAs("/home/mconcas/cernbox/thesis_pictures/clusters0Pt.png", "r");
@@ -387,7 +403,7 @@ int plots(const int inspEvt = -1,
           const std::string inputGRP = "o2sim_grp.root",
           const std::string simfilename = "o2sim.root",
           const std::string paramfilename = "O2geometry.root",
-          const std::string dbgcpufilename = "dbg_ITSVertexerCPU.root",
+          const std::string dbgcpufilename = "dbg_ITSVertexerCPU_PureMC.root",
           const std::string labl2trackinfofilename = "label2Track0.root",
           const std::string path = "./")
 {
