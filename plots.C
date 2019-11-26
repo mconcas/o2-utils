@@ -239,9 +239,6 @@ void plotClusters(const int startAt,
     gStyle->SetPalette(kInvertedDarkBodyRadiator);
     rphi->Draw("colz");
 
-    canvasClustersPhi->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersPhi.pdf", "r");
-    canvasClustersR->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersR.pdf", "r");
-    canvasClustersZ->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersZ.pdf", "r");
     canvasClustersPhi->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersPhi.png", "r");
     canvasClustersR->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersR.png", "r");
     canvasClustersZ->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersZ.png", "r");
@@ -435,7 +432,16 @@ void plotPhiCutVariation(TFile *l2tiFile, std::vector<TFile *> fileVector)
     float x[10] = {0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1};
     float good_v[10];
     float fake_v[10];
+    float good_norm_v[10];
     int counter{0};
+    auto umap = getLabelToTrackMap(l2tiFile);
+    int primaries{0};
+    for(auto& l: umap) {
+        if(l.second.getMotherTrackId() == -1) {
+            primaries++;
+        }
+    }
+    const int norm = umap.size();
     for (auto fileptr : fileVector)
     {
         int fake = 0;
@@ -453,6 +459,7 @@ void plotPhiCutVariation(TFile *l2tiFile, std::vector<TFile *> fileVector)
 
         good_v[counter] = good / (float)(good + fake);
         fake_v[counter] = fake / (float)(good + fake);
+        good_norm_v[counter] = good / (float)(primaries);
         ++counter;
     }
 
@@ -460,30 +467,38 @@ void plotPhiCutVariation(TFile *l2tiFile, std::vector<TFile *> fileVector)
     goodFake->SetGrid();
     goodFake->cd();
     TGraph *grGood = new TGraph(10, x, good_v);
-    grGood->SetTitle("global title;X axis title;Y axis title;Z axis title");
-    grGood->SetFillColor(kAzure - 4);
+    grGood->SetLineColor(TColor::GetColor("#F9627D"));
+    grGood->SetMarkerStyle(22);
+    grGood->SetMarkerColor(TColor::GetColor("#F9627D"));
+    grGood->SetLineWidth(2);
+    TGraph *grGoodNorm = new TGraph(10, x, good_norm_v);
+    grGoodNorm->SetFillColor(TColor::GetColor("#5B3758"));
     TGraph *grFake = new TGraph(10, x, fake_v);
-    grFake->SetLineColor(kOrange + 1);
+    grFake->SetLineColor(TColor::GetColor("#83B692"));
     grFake->SetMarkerStyle(23);
-    grFake->SetMarkerColor(kOrange + 1);
+    grFake->SetMarkerColor(TColor::GetColor("#83B692"));
     grFake->SetLineWidth(2);
     TMultiGraph *mg = new TMultiGraph();
-    mg->SetTitle("Fake/Good tracklets vs #Delta#phi selection, 150 PbPb events minBias; #Delta#phi (rad); #frac{#tracklets}{#total tracklets}");
+    mg->SetTitle("Fake/Good tracklets vs #Delta#phi selection, 150 PbPb events minBias; #Delta#phi (rad); efficiency");
     gPad->Modified();
-    mg->GetXaxis()->SetLimits(0.f, 0.12f);
+    mg->GetXaxis()->SetNdivisions(20);
+    mg->GetXaxis()->SetLimits(0.f, 0.11f);
     mg->SetMinimum(0.f);
     mg->SetMaximum(1.f);
-    mg->Add(grGood, "APB");
+    mg->Add(grGoodNorm, "APB");
+    mg->Add(grGood, "APL");
     mg->Add(grFake, "APL");
     mg->Draw("a");
+
     // Legend
     gStyle->SetLegendTextSize(0.);
     gStyle->SetLegendBorderSize(1);
-    auto legendGoodVsFake = new TLegend(0.6, 0.58, 0.85, 0.68);
-    legendGoodVsFake->AddEntry(grGood, "real tracklets", "f");
-    legendGoodVsFake->AddEntry(grFake, "fake tracklets", "lp");
+    auto legendGoodVsFake = new TLegend(0.5, 0.5, 0.85, 0.68);
+    legendGoodVsFake->AddEntry(grGood, "real/found ", "lp");
+    legendGoodVsFake->AddEntry(grFake, "fake/found ", "lp");
+    legendGoodVsFake->AddEntry(grGoodNorm, "real/MC primaries ", "f");
     legendGoodVsFake->Draw();
-    goodFake->SaveAs("/home/mconcas/cernbox/thesis_pictures/trackletsPtvsDeltaZ.png", "r");
+    goodFake->SaveAs("/home/mconcas/cernbox/thesis_pictures/trackletingEfficiencies.png", "r");
 }
 
 int plots(const int inspEvt = -1,
@@ -542,14 +557,7 @@ int plots(const int inspEvt = -1,
     {
         phiDBGFiles.push_back(TFile::Open(Form("%s%s/dbg_ITSVertexerCPU_PhiCut_0%02d.root", path.data(), phiCutVariationDir.data(), i)));
     }
-    // TTree* l2tiTree = (TTree*) dbgCPUFile.Get("Labels2Tracks");
-
-    // ROOT::EnableImplicitMT(); // Tell ROOT you want to go parallel
-    // ROOT::RDataFrame d1("Labels2Tracks", (path + labl2trackinfofilename).data(), {"MCLabels","Tracks"});
-    // d1.Foreach([](){});
-
-    // auto bC01 = (TBranch *)dbgCPUFile.Get("combinatorics01");
-
+    
     // config
     const int stopAt = (inspEvt == -1) ? rofs->size() : inspEvt + numEvents;
     const int startAt = (inspEvt == -1) ? 0 : inspEvt;
