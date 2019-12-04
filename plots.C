@@ -34,9 +34,9 @@
 #include "ITStracking/IOUtils.h"
 #include "ITStracking/Vertexer.h"
 
-#include "GPUO2Interface.h"
-#include "GPUReconstruction.h"
-#include "GPUChainITS.h"
+// #include "GPUO2Interface.h"
+// #include "GPUReconstruction.h"
+// #include "GPUChainITS.h"
 
 #endif
 
@@ -70,6 +70,23 @@ void arrangeClusters(ROframe *event, std::array<std::vector<Cluster>, constants:
 }
 } // namespace its
 } // namespace o2
+
+const int kBlueC = TColor::GetColor("#1f78b4");
+const int kBlueCT = TColor::GetColorTransparent(kBlueC, 0.9);
+const int kRedC = TColor::GetColor("#e31a1c");
+const int kRedCT = TColor::GetColorTransparent(kRedC, 0.2);
+const int kPurpleC = TColor::GetColor("#911eb4");
+const int kPurpleCT = TColor::GetColorTransparent(kPurpleC, 0.2);
+const int kOrangeC = TColor::GetColor("#ff7f00");
+const int kOrangeCT = TColor::GetColorTransparent(kOrangeC, 0.5);
+const int kGreenC = TColor::GetColor("#33a02c");
+const int kGreenCT = TColor::GetColorTransparent(kGreenC, 0.2);
+const int kMagentaC = TColor::GetColor("#f032e6");
+const int kMagentaCT = TColor::GetColorTransparent(kMagentaC, 0.2);
+const int kYellowC = TColor::GetColor("#ffe119");
+const int kYellowCT = TColor::GetColorTransparent(kYellowC, 0.2);
+const int kBrownC = TColor::GetColor("#b15928");
+const int kBrownCT = TColor::GetColorTransparent(kBrownC, 0.2);
 
 void plotClusters(const int startAt,
                   const int stopAt,
@@ -291,8 +308,6 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
     TH2F *trkDeltaPhiPt = new TH2F("trkDeltaPhiPt", "Tracklets: |#Delta#phi| vs #it{p}_{T}, 150 events PbPb minBias; #it{p}_{T} (GeV/#it{c}); |#Delta#phi| (rad)", 400, 0.f, 5.f, 400, 0.f, 0.01 * TMath::Pi());
     TH2F *trkDeltaLambdaPt = new TH2F("trkDeltaLambdaPt", "Tracklets: |#Delta#lambda| vs #it{p}_{T}, 150 events PbPb minBias; #it{p}_{T} (GeV/#it{c}); |#Delta#lambda| (rad)", 400, 0.f, 5.f, 400, 0.f, 0.01 * TMath::Pi());
 
-    // TH2F *test = new TH2F("test", "#pi_{tracklets}^{#pm} #it{p}_{T} vs #Delta#lambda, 150 events PbPb minBias; #Delta#phi; #Delta#lambda", 4000, -TMath::Pi(), TMath::Pi(), 4000, -TMath::Pi(), TMath::Pi());
-
     while (readerST.Next())
     {
         auto it = umap.find(*labels0);
@@ -301,17 +316,16 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
         {
 
             // Only primaries
-
             deltaZ->Fill((*c0z) - (*c1z));
             cluDeltaPhiPt->Fill(it->second.GetPt(), TMath::Abs((*c0phi) - (*c1phi)));
             cluDeltaZPt->Fill(it->second.GetPt(), (*c0z) - (*c1z));
             trkDeltaPhiPt->Fill(it->second.GetPt(), TMath::Abs(*deltaPhiST));
             trkDeltaLambdaPt->Fill(it->second.GetPt(), TMath::Abs(TMath::ATan2((*c1z - *c0z), (*c1r - *c0r)) - TMath::ATan2((*c2z - *c1z), (*c2r - *c1r))));
+            deltaPhi->Fill(TMath::Abs((*c0phi) - (*c1phi)));
             // Only pions
             if (TMath::Abs(it->second.GetPdgCode()) == 211)
             {
                 pTdist->Fill(it->second.GetPt());
-                deltaPhi->Fill(TMath::Abs((*c0phi) - (*c1phi)));
             }
             // Only specific Pt range
             // if (it->second.GetPt() < 0.2 && it->second.GetPt() > 0.1)
@@ -332,8 +346,8 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
     canvasDeltaPhi->SetLogy();
     deltaPhi->SetDirectory(0);
     deltaPhi->SetLineColor(kBlack);
-    deltaPhi->SetFillColor(kBlue - 8);
-    deltaPhi->SetFillStyle(3015);
+    deltaPhi->SetFillColor(kBlueCT);
+    // deltaPhi->SetFillStyle(3015);
     deltaPhi->GetYaxis()->SetNdivisions(10);
     deltaPhi->GetXaxis()->SetNdivisions(20);
     deltaPhi->GetYaxis()->SetMaxDigits(2);
@@ -343,6 +357,7 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
     gStyle->SetLegendBorderSize(1);
     auto legendDeltaPhi = new TLegend(0.6, 0.78, 0.87, 0.88);
     legendDeltaPhi->AddEntry(pTdist, Form("Entries: %d ", (int)deltaPhi->GetEntries()), "LF");
+    legendDeltaPhi->AddEntry(pTdist, Form("#LT#Delta#phi#GT=%2.4f rad", deltaPhi->GetMean()), "");
     legendDeltaPhi->Draw();
 
     auto canvasDZ = new TCanvas("deltaZ", "deltaZ", 800, 600);
@@ -351,8 +366,8 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
     canvasDZ->cd();
     deltaZ->SetDirectory(0);
     deltaZ->SetLineColor(kBlack);
-    deltaZ->SetFillColor(kBlue - 8);
-    deltaZ->SetFillStyle(3015);
+    deltaZ->SetFillColor(kBlueCT);
+    // deltaZ->SetFillStyle(3015);
     deltaZ->GetYaxis()->SetMaxDigits(2);
     deltaZ->Draw();
 
@@ -363,8 +378,8 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
     canvasPt->SetLogy();
     pTdist->SetDirectory(0);
     pTdist->SetLineColor(kBlack);
-    pTdist->SetFillColor(kBlue - 8);
-    pTdist->SetFillStyle(3015);
+    pTdist->SetFillColor(kBlueCT);
+    // pTdist->SetFillStyle(3015);
     pTdist->GetYaxis()->SetMaxDigits(2);
     pTdist->Draw();
 
@@ -372,6 +387,7 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
     gStyle->SetLegendBorderSize(1);
     auto legendPtdist = new TLegend(0.6, 0.78, 0.87, 0.88);
     legendPtdist->AddEntry(pTdist, Form("Entries: %d ", (int)pTdist->GetEntries()), "LF");
+    legendPtdist->AddEntry(pTdist, Form("#LT#it{p}_{T}#GT= %2.2f GeV/#it{c}", pTdist->GetMean()), "");
     legendPtdist->Draw();
 
     auto canvasPtPhi = new TCanvas("deltaPtPhi", "deltaPtPhi", 800, 600);
@@ -427,26 +443,30 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
     canvasTrackPtDeltaLambda->SaveAs("/home/mconcas/cernbox/thesis_pictures/trackletsPtvsDeltaZ.png", "r");
 }
 
-void plotPhiCutVariation(TFile *l2tiFile, std::vector<TFile *> fileVector)
+void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSingle, std::vector<TFile *> fileVectorTrackleting,
+                         std::vector<TFile *> fileVectorSelection)
 {
-    float x[10] = {0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1};
-    float good_v[10];
-    float fake_v[10];
-    float good_norm_v[10];
-    int counter{0};
+    gStyle->SetBarWidth(0.5);
+    float x[11] = {0.005, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1};
+    float good_v[11], fake_v[11], good01_v[11], fake01_v[11], good12_v[11], fake12_v[11], good_norm_v[11], good01_norm_v[11], good12_norm_v[11];
+    int counter{0}, counter01{0}, counter12{0};
     auto umap = getLabelToTrackMap(l2tiFile);
-    int primaries{0};
-    for(auto& l: umap) {
-        if(l.second.getMotherTrackId() == -1) {
-            primaries++;
-        }
-    }
-    const int norm = umap.size();
-    for (auto fileptr : fileVector)
+    int primaries{0}, allTracks{0};
+    TTreeReader readerPMC01("combinatorics01", dbgCPUFileSingle);
+    TTreeReader readerPMC12("combinatorics12", dbgCPUFileSingle);
+    auto a{readerPMC01.GetEntries()};
+    auto b{readerPMC12.GetEntries()};
+    for (auto &l : umap)
     {
-        int fake = 0;
-        int good = 0;
+        if (l.second.getMotherTrackId() == -1 /* && TMath::Abs(l.second.GetPdgCode()) == 211*/)
+            primaries++;
+        allTracks++;
+    }
 
+    // const int norm = umap.size();
+    for (auto fileptr : fileVectorSelection)
+    {
+        int fake{0}, good{0};
         TTreeReader readerPhiCV("selectedTracklets", fileptr);
         TTreeReaderValue<unsigned char> validated(readerPhiCV, "isValidated");
         while (readerPhiCV.Next())
@@ -466,22 +486,23 @@ void plotPhiCutVariation(TFile *l2tiFile, std::vector<TFile *> fileVector)
     auto goodFake = new TCanvas("goodFake", "goodFake", 800, 600);
     goodFake->SetGrid();
     goodFake->cd();
-    TGraph *grGood = new TGraph(10, x, good_v);
+    TGraph *grGood = new TGraph(11, x, good_v);
     grGood->SetLineColor(TColor::GetColor("#F9627D"));
     grGood->SetMarkerStyle(22);
     grGood->SetMarkerColor(TColor::GetColor("#F9627D"));
     grGood->SetLineWidth(2);
-    TGraph *grGoodNorm = new TGraph(10, x, good_norm_v);
-    grGoodNorm->SetFillColor(TColor::GetColor("#5B3758"));
-    TGraph *grFake = new TGraph(10, x, fake_v);
+    TGraph *grGoodNorm = new TGraph(11, x, good_norm_v);
+    grGoodNorm->SetFillColor(kPurpleCT);
+    grGoodNorm->SetFillStyle(3001);
+    TGraph *grFake = new TGraph(11, x, fake_v);
     grFake->SetLineColor(TColor::GetColor("#83B692"));
     grFake->SetMarkerStyle(23);
     grFake->SetMarkerColor(TColor::GetColor("#83B692"));
     grFake->SetLineWidth(2);
     TMultiGraph *mg = new TMultiGraph();
-    mg->SetTitle("Fake/Good tracklets vs #Delta#phi selection, 150 PbPb events minBias; #Delta#phi (rad); efficiency");
+    mg->SetTitle("Tracklet selection: #Deltatan#lambda=0.002; #Delta#phi (rad); efficiency");
     gPad->Modified();
-    mg->GetXaxis()->SetNdivisions(20);
+    mg->GetXaxis()->SetNdivisions(21);
     mg->GetXaxis()->SetLimits(0.f, 0.11f);
     mg->SetMinimum(0.f);
     mg->SetMaximum(1.f);
@@ -494,11 +515,192 @@ void plotPhiCutVariation(TFile *l2tiFile, std::vector<TFile *> fileVector)
     gStyle->SetLegendTextSize(0.);
     gStyle->SetLegendBorderSize(1);
     auto legendGoodVsFake = new TLegend(0.5, 0.5, 0.85, 0.68);
-    legendGoodVsFake->AddEntry(grGood, "real/found ", "lp");
+    legendGoodVsFake->SetHeader("150 events PbPb MB","C");
+    legendGoodVsFake->AddEntry(grGood, "validated/found ", "lp");
     legendGoodVsFake->AddEntry(grFake, "fake/found ", "lp");
-    legendGoodVsFake->AddEntry(grGoodNorm, "real/MC primaries ", "f");
+    legendGoodVsFake->AddEntry(grGoodNorm, "validated/MC primaries ", "f");
     legendGoodVsFake->Draw();
-    goodFake->SaveAs("/home/mconcas/cernbox/thesis_pictures/trackletingEfficiencies.png", "r");
+    goodFake->SaveAs("/home/mconcas/cernbox/thesis_pictures/selectionEfficiencies.png", "r");
+
+    for (auto fileptr : fileVectorTrackleting)
+    {
+        long int fake01{0}, fake12{0}, good01{0}, good12{0};
+        TTreeReader readerComb01("combinatorics01", fileptr);
+        TTreeReader readerComb12("combinatorics12", fileptr);
+        TTreeReaderValue<unsigned char> c01validated(readerComb01, "isValidated");
+        TTreeReaderValue<unsigned char> c12validated(readerComb12, "isValidated");
+        TTreeReaderValue<o2::MCCompLabel> labels0(readerComb01, "lblClus0");
+        TTreeReaderValue<o2::MCCompLabel> labels2(readerComb12, "lblClus2");
+
+        while (readerComb01.Next())
+        {
+            if (*c01validated)
+            {
+                // auto it = umap.find(*labels0);
+                // if (it != umap.end() && it->second.getMotherTrackId() == -1 && TMath::Abs(it->second.GetPdgCode()) == 211)
+                // {
+                ++good01;
+                // umap.erase(it);
+                // }
+            }
+            else
+                ++fake01;
+        }
+        // umap = getLabelToTrackMap(l2tiFile);
+        while (readerComb12.Next())
+        {
+            if (*c12validated)
+            {
+                // auto it = umap.find(*labels2);
+                // if (it != umap.end() && it->second.getMotherTrackId() == -1 && TMath::Abs(it->second.GetPdgCode()) == 211)
+                // {
+                ++good12;
+                // umap.erase(it);
+                // }
+            }
+            else
+                ++fake12;
+        }
+
+        good01_v[counter01] = good01 / (double)(good01 + fake01);
+        fake01_v[counter01] = fake01 / (double)(good01 + fake01);
+        good01_norm_v[counter01] = good01 / (double)(a);
+
+        good12_v[counter12] = good12 / (double)(good12 + fake12);
+        fake12_v[counter12] = fake12 / (double)(good12 + fake12);
+        good12_norm_v[counter12] = good12 / (double)(b);
+        ++counter01;
+        ++counter12;
+    }
+    // -----------------------------------
+    auto goodFake01 = new TCanvas("goodFake01", "goodFake01", 800, 600);
+    goodFake01->SetGrid();
+    goodFake01->cd();
+    TGraph *grGood01 = new TGraph(11, x, good01_v);
+    grGood01->SetLineColor(TColor::GetColor("#F9627D"));
+    grGood01->SetMarkerStyle(22);
+    grGood01->SetMarkerColor(TColor::GetColor("#F9627D"));
+    grGood01->SetLineWidth(2);
+    TGraph *grGoodNorm01 = new TGraph(11, x, good01_norm_v);
+    grGoodNorm01->SetFillColor(kBlueCT);
+    grGoodNorm01->SetFillStyle(3001);
+    TGraph *grFake01 = new TGraph(11, x, fake01_v);
+    grFake01->SetLineColor(TColor::GetColor("#83B692"));
+    grFake01->SetMarkerStyle(23);
+    grFake01->SetMarkerColor(TColor::GetColor("#83B692"));
+    grFake01->SetLineWidth(2);
+    TMultiGraph *mg01 = new TMultiGraph();
+    mg01->SetTitle("Tracklet finder L_{0}-L_{1}; #Delta#phi (rad); efficiency");
+    gPad->Modified();
+    mg01->GetXaxis()->SetNdivisions(20);
+    mg01->GetXaxis()->SetLimits(0.f, 0.11f);
+    mg01->SetMinimum(0.f);
+    // mg01->SetMaximum(1.f);
+    mg01->Add(grGoodNorm01, "APB");
+    mg01->Add(grGood01, "APL");
+    mg01->Add(grFake01, "APL");
+    mg01->Draw("a");
+
+    // Legend
+    gStyle->SetLegendTextSize(0.);
+    gStyle->SetLegendBorderSize(1);
+    auto legendGoodVsFake01 = new TLegend(0.5, 0.5, 0.85, 0.68);
+    legendGoodVsFake01->SetHeader("150 events PbPb MB","C");
+    legendGoodVsFake01->AddEntry(grGood01, "validated/found ", "lp");
+    legendGoodVsFake01->AddEntry(grFake01, "fake/found ", "lp");
+    legendGoodVsFake01->AddEntry(grGoodNorm01, "validated/MC_{matches} ", "f");
+    legendGoodVsFake01->Draw();
+    goodFake01->SaveAs("/home/mconcas/cernbox/thesis_pictures/trackleting01Efficiencies.png", "r");
+
+    // -----------------------------------
+    auto goodFake12 = new TCanvas("goodFake12", "goodFake12", 800, 600);
+    goodFake12->SetGrid();
+    goodFake12->cd();
+    TGraph *grGood12 = new TGraph(11, x, good01_v);
+    grGood12->SetLineColor(TColor::GetColor("#F9627D"));
+    grGood12->SetMarkerStyle(22);
+    grGood12->SetMarkerColor(TColor::GetColor("#F9627D"));
+    grGood12->SetLineWidth(2);
+    TGraph *grGoodNorm12 = new TGraph(11, x, good01_norm_v);
+    grGoodNorm12->SetFillColor(kBrownCT);
+    grGoodNorm12->SetFillStyle(3001);
+    TGraph *grFake12 = new TGraph(11, x, fake01_v);
+    grFake12->SetLineColor(TColor::GetColor("#83B692"));
+    grFake12->SetMarkerStyle(23);
+    grFake12->SetMarkerColor(TColor::GetColor("#83B692"));
+    grFake12->SetLineWidth(2);
+    TMultiGraph *mg12 = new TMultiGraph();
+    mg12->SetTitle("Tracklet finder L_{1}-L_{2}; #Delta#phi (rad); efficiency");
+    gPad->Modified();
+    mg12->GetXaxis()->SetNdivisions(20);
+    mg12->GetXaxis()->SetLimits(0.f, 0.11f);
+    mg12->SetMinimum(0.f);
+    // mg12->SetMaximum(1.f);
+    mg12->Add(grGoodNorm12, "APB");
+    mg12->Add(grGood12, "APL");
+    mg12->Add(grFake12, "APL");
+    mg12->Draw("a");
+
+    // Legend
+    gStyle->SetLegendTextSize(0.);
+    gStyle->SetLegendBorderSize(1);
+    auto legendGoodVsFake12 = new TLegend(0.5, 0.5, 0.85, 0.68);
+    legendGoodVsFake12->SetHeader("150 events PbPb MB","C");
+    legendGoodVsFake12->AddEntry(grGood12, "validated/found ", "lp");
+    legendGoodVsFake12->AddEntry(grFake12, "fake/found ", "lp");
+    legendGoodVsFake12->AddEntry(grGoodNorm12, "validated/MC_{matches} ", "f");
+    legendGoodVsFake12->Draw();
+    goodFake12->SaveAs("/home/mconcas/cernbox/thesis_pictures/trackleting12Efficiencies.png", "r");
+}
+
+void plotZCorrelations(TFile *fileptr)
+{
+    gStyle->SetOptStat(0);
+    TTreeReader readerPMC01("combinatorics01", fileptr);
+    TTreeReader readerPMC12("combinatorics12", fileptr);
+    TTreeReaderValue<float> z0(readerPMC01, "c0z");
+    TTreeReaderValue<float> z1(readerPMC01, "c1z");
+    TTreeReaderValue<float> z11(readerPMC12, "c1z");
+    TTreeReaderValue<float> z21(readerPMC12, "c2z");
+
+    TH2F *hist01 = new TH2F("z0z1Correlations", "z_{0}-z_{1} correlations, #Delta#phi=0.005 rad; z_{0} (cm); z_{1} (cm)", 1000, -14.5f, 14.5f, 400, -14.5f, 14.5f);
+    while (readerPMC01.Next())
+    {
+        hist01->Fill(*z0, *z1);
+    }
+    TH2F *hist12 = new TH2F("z1z2Correlations", "z_{1}-z_{2} correlations, #Delta#phi=0.005 rad; z_{1} (cm); z_{2} (cm)", 1000, -14.5f, 14.5f, 400, -14.5f, 14.5f);
+    while (readerPMC12.Next())
+    {
+        hist12->Fill(*z11, *z21);
+    }
+    auto canvasz0z1 = new TCanvas("z0z1Correlations", "z0z1Correlations", 800, 800);
+    canvasz0z1->SetGrid();
+    canvasz0z1->cd();
+    hist01->SetDirectory(0);
+    hist01->Draw();
+
+    // Legend
+    gStyle->SetLegendBorderSize(1);
+    auto legendCorrZ01 = new TLegend(0.6, 0.28, 0.87, 0.38);
+    legendCorrZ01->SetHeader("PbPb single event","C");
+    legendCorrZ01->AddEntry(hist01, Form("Tracklets: %d ", (int)hist01->GetEntries()), "l");
+    legendCorrZ01->Draw();
+
+    auto canvasz1z2 = new TCanvas("z1z2Correlations", "z1z2Correlations", 800, 800);
+    canvasz1z2->SetGrid();
+    canvasz1z2->cd();
+    hist12->SetDirectory(0);
+    hist12->Draw();
+
+    // Legend
+    gStyle->SetLegendBorderSize(1);
+    auto legendCorrZ12 = new TLegend(0.6, 0.28, 0.87, 0.38);
+    legendCorrZ12->SetHeader("PbPb single event","C");
+    legendCorrZ12->AddEntry(hist12, Form("Tracklets: %d ", (int)hist12->GetEntries()), "l");
+    legendCorrZ12->Draw();
+
+    canvasz0z1->SaveAs("/home/mconcas/cernbox/thesis_pictures/z0z1correlations.png", "r");
+    canvasz1z2->SaveAs("/home/mconcas/cernbox/thesis_pictures/z1z2correlations.png", "r");
 }
 
 int plots(const int inspEvt = -1,
@@ -507,9 +709,11 @@ int plots(const int inspEvt = -1,
           const std::string inputGRP = "o2sim_grp.root",
           const std::string simfilename = "o2sim.root",
           const std::string paramfilename = "O2geometry.root",
-          const std::string dbgcpufilename = "dbg_ITSVertexerCPU_PureMC.root",
+          const std::string dbgcpufilename = "dbg_ITSVertexerCPU_150_PureMC.root",
+          const std::string dbgcpufilenameSingle505 = "dbg_ITSVertexerCPU_PureMC_single_505.root",
           const std::string labl2trackinfofilename = "label2Track0.root",
-          const std::string phiCutVariationDir = "phiCutVariationData",
+          const std::string phiCutVariationSelectionDir = "phiCutVariationData/150evts",
+          const std::string phiCutVariationTrackletingDir = "phiCutVariationData/single505",
           const std::string path = "./")
 {
     // file load and stuff
@@ -549,15 +753,26 @@ int plots(const int inspEvt = -1,
     // dbg CPU
     TFile dbgCPUFile((path + dbgcpufilename).data());
 
+    // dbg CPU single event
+    TFile dbgcpufileSingle505((path + dbgcpufilenameSingle505).data());
+
     // labels to tracks
     TFile l2tiFile((path + labl2trackinfofilename).data());
 
-    std::vector<TFile *> phiDBGFiles;
+    std::vector<TFile *> phiDBGFilesSelection;
+    phiDBGFilesSelection.push_back(TFile::Open(Form("%s%s/dbg_ITSVertexerCPU_PhiCut_0005.root", path.data(), phiCutVariationSelectionDir.data())));
     for (int i{1}; i < 11; ++i)
     {
-        phiDBGFiles.push_back(TFile::Open(Form("%s%s/dbg_ITSVertexerCPU_PhiCut_0%02d.root", path.data(), phiCutVariationDir.data(), i)));
+        phiDBGFilesSelection.push_back(TFile::Open(Form("%s%s/dbg_ITSVertexerCPU_PhiCut_0%02d.root", path.data(), phiCutVariationSelectionDir.data(), i)));
     }
-    
+
+    std::vector<TFile *> phiDBGFilesTrackleting;
+    phiDBGFilesTrackleting.push_back(TFile::Open(Form("%s%s/dbg_ITSVertexerCPU_PhiCut_0005.root", path.data(), phiCutVariationTrackletingDir.data())));
+    for (int i{1}; i < 11; ++i)
+    {
+        phiDBGFilesTrackleting.push_back(TFile::Open(Form("%s%s/dbg_ITSVertexerCPU_PhiCut_0%02d.root", path.data(), phiCutVariationTrackletingDir.data(), i)));
+    }
+
     // config
     const int stopAt = (inspEvt == -1) ? rofs->size() : inspEvt + numEvents;
     const int startAt = (inspEvt == -1) ? 0 : inspEvt;
@@ -570,7 +785,8 @@ int plots(const int inspEvt = -1,
     // Hereafter: direct calls to plotting functions
     // plotClusters(startAt, stopAt, rofs, clusters, labels);
     // plotDBGCPU(&dbgCPUFile, &l2tiFile);
-    plotPhiCutVariation(&l2tiFile, phiDBGFiles);
+    plotPhiCutVariation(&l2tiFile, &dbgCPUFile, &dbgcpufileSingle505, phiDBGFilesTrackleting, phiDBGFilesSelection);
+    plotZCorrelations(phiDBGFilesTrackleting[0]);
 
     return 0;
 }
