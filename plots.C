@@ -300,13 +300,13 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
     auto umap = getLabelToTrackMap(l2tiFile);
 
     // Histos
-    TH1F *deltaPhi = new TH1F("deltaPhi", "Clusters: #Delta#phi, 150 events PbPb minBias; #Delta#phi (rad); N_{entries}", 200, 0.f, 0.05f);
-    TH1F *deltaZ = new TH1F("deltaZ", "Clusters: #DeltaZ, 150 events PbPb minBias; #DeltaZ (cm); N_{entries}", 200, -35.f, 35.f);
-    TH1F *pTdist = new TH1F("pTdistribution", "#pi^{#pm} #it{p}_{T} distribution, 150 events PbPb minBias; #it{p}_{T} (GeV/#it{c}); N_{entries}", 400, 0.f, 5.f);
+    TH1F *deltaPhi = new TH1F("deltaPhi", "#Delta#phi for correlated clusters L_{0}-L_{1}; #Delta#phi (rad); N_{entries}", 200, 0.f, 0.05f);
+    TH1F *deltaZ = new TH1F("deltaZ", "#DeltaZ for correlated clusters L_{0}-L_{1}; #DeltaZ (cm); N_{entries}", 200, -35.f, 35.f);
+    TH1F *pTdist = new TH1F("pTdistribution", "#pi^{#pm}: #it{p}_{T}; #it{p}_{T} (GeV/#it{c}); N_{entries}", 400, 0.f, 5.f);
     TH2F *cluDeltaPhiPt = new TH2F("cluDeltaPhiPt", "Clusters: #it{p}_{T} vs #Delta#phi, 150 events PbPb minBias; #it{p}_{T} (GeV/#it{c}); #Delta#phi (rad)", 400, 0.f, 5.f, 400, 0.f, 0.01f);
     TH2F *cluDeltaZPt = new TH2F("cluDeltaZPt", "Clusters: #DeltaZ vs #it{p}_{T}, 150 events PbPb minBias; #it{p}_{T} (GeV/#it{c}); #DeltaZ (cm)", 400, 0.f, 5.f, 400, -10.f, 10.f);
-    TH2F *trkDeltaPhiPt = new TH2F("trkDeltaPhiPt", "Tracklets: |#Delta#phi| vs #it{p}_{T}, 150 events PbPb minBias; #it{p}_{T} (GeV/#it{c}); |#Delta#phi| (rad)", 400, 0.f, 5.f, 400, 0.f, 0.01 * TMath::Pi());
-    TH2F *trkDeltaLambdaPt = new TH2F("trkDeltaLambdaPt", "Tracklets: |#Delta#lambda| vs #it{p}_{T}, 150 events PbPb minBias; #it{p}_{T} (GeV/#it{c}); |#Delta#lambda| (rad)", 400, 0.f, 5.f, 400, 0.f, 0.01 * TMath::Pi());
+    TH2F *trkDeltaPhiPt = new TH2F("trkDeltaPhiPt", "|#Delta#phi| vs #it{p}_{T} for correlated tracklets; #it{p}_{T} (GeV/#it{c}); |#Delta#phi| (rad)", 400, 0.f, 5.f, 400, 0.f, 0.01 * TMath::Pi());
+    TH2F *trkDeltaLambdaPt = new TH2F("trkDeltaLambdaPt", "|#Delta#lambda| vs #it{p}_{T} for correlated tracklets; #it{p}_{T} (GeV/#it{c}); |#Delta#lambda| (rad)", 400, 0.f, 5.f, 400, 0.f, 0.01 * TMath::Pi());
 
     while (readerST.Next())
     {
@@ -340,36 +340,46 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
     // Draw section
     gStyle->SetPalette(kBird);
 
-    auto canvasDeltaPhi = new TCanvas("deltaPhi", "deltaPhi", 800, 600);
+    auto canvasDeltaPhi = new TCanvas("deltaPhi", "deltaPhi", 800, 800);
     canvasDeltaPhi->SetGrid();
     canvasDeltaPhi->cd();
     canvasDeltaPhi->SetLogy();
     deltaPhi->SetDirectory(0);
     deltaPhi->SetLineColor(kBlack);
-    deltaPhi->SetFillColor(kBlueCT);
+    deltaPhi->SetFillColor(kOrangeCT);
     // deltaPhi->SetFillStyle(3015);
     deltaPhi->GetYaxis()->SetNdivisions(10);
-    deltaPhi->GetXaxis()->SetNdivisions(20);
+    deltaPhi->GetXaxis()->SetNdivisions(10);
     deltaPhi->GetYaxis()->SetMaxDigits(2);
+    deltaPhi->GetYaxis()->SetMaxDigits(3);
     deltaPhi->Draw();
 
     // Legend
     gStyle->SetLegendBorderSize(1);
     auto legendDeltaPhi = new TLegend(0.6, 0.78, 0.87, 0.88);
-    legendDeltaPhi->AddEntry(pTdist, Form("Entries: %d ", (int)deltaPhi->GetEntries()), "LF");
-    legendDeltaPhi->AddEntry(pTdist, Form("#LT#Delta#phi#GT=%2.4f rad", deltaPhi->GetMean()), "");
+    legendDeltaPhi->SetHeader("150 events PbPb MB");
+    legendDeltaPhi->AddEntry(deltaPhi, Form("Entries: %d ", (int)deltaPhi->GetEntries()), "LF");
+    legendDeltaPhi->AddEntry(deltaPhi, Form("#LT#Delta#phi#GT=%2.4f rad", deltaPhi->GetMean()), "");
     legendDeltaPhi->Draw();
 
-    auto canvasDZ = new TCanvas("deltaZ", "deltaZ", 800, 600);
+    auto canvasDZ = new TCanvas("deltaZ", "deltaZ", 800, 800);
     canvasDZ->SetLogy();
     canvasDZ->SetGrid();
     canvasDZ->cd();
     deltaZ->SetDirectory(0);
     deltaZ->SetLineColor(kBlack);
-    deltaZ->SetFillColor(kBlueCT);
+    deltaZ->SetFillColor(kOrangeCT);
     // deltaZ->SetFillStyle(3015);
     deltaZ->GetYaxis()->SetMaxDigits(2);
     deltaZ->Draw();
+
+    // Legend
+    gStyle->SetLegendBorderSize(1);
+    auto legenddeltaZ = new TLegend(0.6, 0.78, 0.87, 0.88);
+    legenddeltaZ->SetHeader("150 events PbPb MB");
+    legenddeltaZ->AddEntry(deltaZ, Form("Entries: %d ", (int)deltaZ->GetEntries()), "LF");
+    legenddeltaZ->AddEntry(deltaZ, Form("#LT#it{p}_{T}#GT= %2.2f GeV/#it{c}", deltaZ->GetMean()), "");
+    legenddeltaZ->Draw();
 
     auto canvasPt = new TCanvas("PiPt", "PiPt", 800, 600);
     // canvasPt->SetLogy();
@@ -386,6 +396,7 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
     // Legend
     gStyle->SetLegendBorderSize(1);
     auto legendPtdist = new TLegend(0.6, 0.78, 0.87, 0.88);
+    legendPtdist->SetHeader("150 events PbPb MB");
     legendPtdist->AddEntry(pTdist, Form("Entries: %d ", (int)pTdist->GetEntries()), "LF");
     legendPtdist->AddEntry(pTdist, Form("#LT#it{p}_{T}#GT= %2.2f GeV/#it{c}", pTdist->GetMean()), "");
     legendPtdist->Draw();
@@ -413,6 +424,7 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
     // Legend
     gStyle->SetLegendBorderSize(1);
     auto legendTrkDeltaLambdaPt = new TLegend(0.6, 0.78, 0.87, 0.88);
+    legendTrkDeltaLambdaPt->SetHeader("150 events PbPb MB");
     legendTrkDeltaLambdaPt->AddEntry(trkDeltaLambdaPt, Form("Entries: %d ", (int)trkDeltaLambdaPt->GetEntries()), "l");
     legendTrkDeltaLambdaPt->Draw();
 
@@ -425,6 +437,7 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
     // Legend
     gStyle->SetLegendBorderSize(1);
     auto legendTrkDeltaPhiPt = new TLegend(0.6, 0.78, 0.87, 0.88);
+    legendTrkDeltaPhiPt->SetHeader("150 events PbPb MB");
     legendTrkDeltaPhiPt->AddEntry(trkDeltaPhiPt, Form("Entries: %d ", (int)trkDeltaPhiPt->GetEntries()), "l");
     legendTrkDeltaPhiPt->Draw();
 
@@ -483,7 +496,7 @@ void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSi
         ++counter;
     }
 
-    auto goodFake = new TCanvas("goodFake", "goodFake", 800, 600);
+    auto goodFake = new TCanvas("goodFake", "goodFake", 800, 800);
     goodFake->SetGrid();
     goodFake->cd();
     TGraph *grGood = new TGraph(11, x, good_v);
@@ -505,7 +518,7 @@ void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSi
     mg->GetXaxis()->SetNdivisions(21);
     mg->GetXaxis()->SetLimits(0.f, 0.11f);
     mg->SetMinimum(0.f);
-    mg->SetMaximum(1.f);
+    // mg->SetMaximum(1.f);
     mg->Add(grGoodNorm, "APB");
     mg->Add(grGood, "APL");
     mg->Add(grFake, "APL");
@@ -515,10 +528,10 @@ void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSi
     gStyle->SetLegendTextSize(0.);
     gStyle->SetLegendBorderSize(1);
     auto legendGoodVsFake = new TLegend(0.5, 0.5, 0.85, 0.68);
-    legendGoodVsFake->SetHeader("150 events PbPb MB","C");
+    legendGoodVsFake->SetHeader("150 events PbPb MB", "C");
     legendGoodVsFake->AddEntry(grGood, "validated/found ", "lp");
     legendGoodVsFake->AddEntry(grFake, "fake/found ", "lp");
-    legendGoodVsFake->AddEntry(grGoodNorm, "validated/MC primaries ", "f");
+    legendGoodVsFake->AddEntry(grGoodNorm, "validated/MC_{primaries} ", "f");
     legendGoodVsFake->Draw();
     goodFake->SaveAs("/home/mconcas/cernbox/thesis_pictures/selectionEfficiencies.png", "r");
 
@@ -573,7 +586,7 @@ void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSi
         ++counter12;
     }
     // -----------------------------------
-    auto goodFake01 = new TCanvas("goodFake01", "goodFake01", 800, 600);
+    auto goodFake01 = new TCanvas("goodFake01", "goodFake01", 800, 800);
     goodFake01->SetGrid();
     goodFake01->cd();
     TGraph *grGood01 = new TGraph(11, x, good01_v);
@@ -592,7 +605,7 @@ void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSi
     TMultiGraph *mg01 = new TMultiGraph();
     mg01->SetTitle("Tracklet finder L_{0}-L_{1}; #Delta#phi (rad); efficiency");
     gPad->Modified();
-    mg01->GetXaxis()->SetNdivisions(20);
+    mg01->GetXaxis()->SetNdivisions(21);
     mg01->GetXaxis()->SetLimits(0.f, 0.11f);
     mg01->SetMinimum(0.f);
     // mg01->SetMaximum(1.f);
@@ -605,15 +618,15 @@ void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSi
     gStyle->SetLegendTextSize(0.);
     gStyle->SetLegendBorderSize(1);
     auto legendGoodVsFake01 = new TLegend(0.5, 0.5, 0.85, 0.68);
-    legendGoodVsFake01->SetHeader("150 events PbPb MB","C");
+    legendGoodVsFake01->SetHeader("150 events PbPb MB", "C");
     legendGoodVsFake01->AddEntry(grGood01, "validated/found ", "lp");
     legendGoodVsFake01->AddEntry(grFake01, "fake/found ", "lp");
-    legendGoodVsFake01->AddEntry(grGoodNorm01, "validated/MC_{matches} ", "f");
+    legendGoodVsFake01->AddEntry(grGoodNorm01, "validated/MC_{matches}", "f");
     legendGoodVsFake01->Draw();
     goodFake01->SaveAs("/home/mconcas/cernbox/thesis_pictures/trackleting01Efficiencies.png", "r");
 
     // -----------------------------------
-    auto goodFake12 = new TCanvas("goodFake12", "goodFake12", 800, 600);
+    auto goodFake12 = new TCanvas("goodFake12", "goodFake12", 800, 800);
     goodFake12->SetGrid();
     goodFake12->cd();
     TGraph *grGood12 = new TGraph(11, x, good01_v);
@@ -632,7 +645,7 @@ void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSi
     TMultiGraph *mg12 = new TMultiGraph();
     mg12->SetTitle("Tracklet finder L_{1}-L_{2}; #Delta#phi (rad); efficiency");
     gPad->Modified();
-    mg12->GetXaxis()->SetNdivisions(20);
+    mg12->GetXaxis()->SetNdivisions(21);
     mg12->GetXaxis()->SetLimits(0.f, 0.11f);
     mg12->SetMinimum(0.f);
     // mg12->SetMaximum(1.f);
@@ -645,12 +658,104 @@ void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSi
     gStyle->SetLegendTextSize(0.);
     gStyle->SetLegendBorderSize(1);
     auto legendGoodVsFake12 = new TLegend(0.5, 0.5, 0.85, 0.68);
-    legendGoodVsFake12->SetHeader("150 events PbPb MB","C");
+    legendGoodVsFake12->SetHeader("150 events PbPb MB", "C");
     legendGoodVsFake12->AddEntry(grGood12, "validated/found ", "lp");
     legendGoodVsFake12->AddEntry(grFake12, "fake/found ", "lp");
     legendGoodVsFake12->AddEntry(grGoodNorm12, "validated/MC_{matches} ", "f");
     legendGoodVsFake12->Draw();
     goodFake12->SaveAs("/home/mconcas/cernbox/thesis_pictures/trackleting12Efficiencies.png", "r");
+}
+
+void plotTanLambdaVariation(TFile *l2tiFile, std::vector<TFile *> fileVectorSelection)
+{
+    gStyle->SetBarWidth(0.5);
+    float tanLambdaCuts[11] = {0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009, 0.010, 0.011};
+    float good_v[11], fake_v[11], good_norm_v[11];
+    int counter{0};
+    auto umap = getLabelToTrackMap(l2tiFile);
+    int primaries{0};
+    TH1F *histReference = new TH1F("", "", 200, 0.f, 5.f);
+    for (auto &l : umap)
+    {
+        if (l.second.getMotherTrackId() /* == -1 && l.second.GetPt() >= 0.1*/)
+        {
+            primaries++;
+            histReference->Fill(l.second.GetPt());
+        }
+    }
+    // TH1F *histReference = new TH1F("", "", 200, 0.f, 5.f);
+    std::vector<TH1F *> histos(11);
+    std::vector<TH1F *> histosDivided(11);
+    for (auto fileptr : fileVectorSelection)
+    {
+        auto umaptmp = getLabelToTrackMap(l2tiFile);
+        histos[counter] = new TH1F(Form("histo%d", counter), Form("histo%d", counter), 200, 0.f, 5.f);
+        int fake{0}, good{0};
+        TTreeReader readerPhiCV("selectedTracklets", fileptr);
+        TTreeReaderValue<unsigned char> validated(readerPhiCV, "isValidated");
+        TTreeReaderValue<o2::MCCompLabel> labels(readerPhiCV, "lblClus0");
+        while (readerPhiCV.Next())
+        {
+            if (*validated)
+            {
+                ++good;
+                auto it = umaptmp.find(*labels);
+                if (it != umaptmp.end())
+                {
+                    histos[counter]->Fill(it->second.GetPt());
+                    umaptmp.erase(it);
+                }
+            }
+            else
+                ++fake;
+        }
+        histosDivided[counter] = (TH1F*)histos[counter]->Clone(Form("histo%d", counter));
+        histosDivided[counter]->Divide(histos[counter], histReference);
+        histosDivided[counter]->Draw("same");
+        good_v[counter] = good / (float)(good + fake);
+        fake_v[counter] = fake / (float)(good + fake);
+        good_norm_v[counter] = good / (float)(primaries);
+        ++counter;
+    }
+
+    auto goodFake = new TCanvas("goodFake", "goodFake", 800, 800);
+    goodFake->SetGrid();
+    goodFake->cd();
+    TGraph *grGood = new TGraph(11, tanLambdaCuts, good_v);
+    grGood->SetLineColor(TColor::GetColor("#F9627D"));
+    grGood->SetMarkerStyle(22);
+    grGood->SetMarkerColor(TColor::GetColor("#F9627D"));
+    grGood->SetLineWidth(2);
+    TGraph *grGoodNorm = new TGraph(11, tanLambdaCuts, good_norm_v);
+    grGoodNorm->SetFillColor(kPurpleCT);
+    grGoodNorm->SetFillStyle(3001);
+    TGraph *grFake = new TGraph(11, tanLambdaCuts, fake_v);
+    grFake->SetLineColor(TColor::GetColor("#83B692"));
+    grFake->SetMarkerStyle(23);
+    grFake->SetMarkerColor(TColor::GetColor("#83B692"));
+    grFake->SetLineWidth(2);
+    TMultiGraph *mg = new TMultiGraph();
+    mg->SetTitle("Tracklet selection: #Delta#phi=0.01; #Deltatan#lambda; efficiency");
+    gPad->Modified();
+    // mg->GetXaxis()->SetNdivisions(21);
+    // mg->GetXaxis()->SetLimits(0.f, 0.11f);
+    mg->SetMinimum(0.f);
+    // mg->SetMaximum(2.f);
+    mg->Add(grGoodNorm, "APB");
+    mg->Add(grGood, "APL");
+    mg->Add(grFake, "APL");
+    mg->Draw("a");
+
+    // Legend
+    gStyle->SetLegendTextSize(0.);
+    gStyle->SetLegendBorderSize(1);
+    auto legendGoodVsFake = new TLegend(0.5, 0.5, 0.85, 0.68);
+    legendGoodVsFake->SetHeader("150 events PbPb MB", "C");
+    legendGoodVsFake->AddEntry(grGood, "validated/found ", "lp");
+    legendGoodVsFake->AddEntry(grFake, "fake/found ", "lp");
+    legendGoodVsFake->AddEntry(grGoodNorm, "validated/MC_{primaries} ", "f");
+    legendGoodVsFake->Draw();
+    goodFake->SaveAs("/home/mconcas/cernbox/thesis_pictures/selectionEfficienciesTanLambda.png", "r");
 }
 
 void plotZCorrelations(TFile *fileptr)
@@ -682,7 +787,7 @@ void plotZCorrelations(TFile *fileptr)
     // Legend
     gStyle->SetLegendBorderSize(1);
     auto legendCorrZ01 = new TLegend(0.6, 0.28, 0.87, 0.38);
-    legendCorrZ01->SetHeader("PbPb single event","C");
+    legendCorrZ01->SetHeader("PbPb single event", "C");
     legendCorrZ01->AddEntry(hist01, Form("Tracklets: %d ", (int)hist01->GetEntries()), "l");
     legendCorrZ01->Draw();
 
@@ -695,7 +800,7 @@ void plotZCorrelations(TFile *fileptr)
     // Legend
     gStyle->SetLegendBorderSize(1);
     auto legendCorrZ12 = new TLegend(0.6, 0.28, 0.87, 0.38);
-    legendCorrZ12->SetHeader("PbPb single event","C");
+    legendCorrZ12->SetHeader("PbPb single event", "C");
     legendCorrZ12->AddEntry(hist12, Form("Tracklets: %d ", (int)hist12->GetEntries()), "l");
     legendCorrZ12->Draw();
 
@@ -714,6 +819,7 @@ int plots(const int inspEvt = -1,
           const std::string labl2trackinfofilename = "label2Track0.root",
           const std::string phiCutVariationSelectionDir = "phiCutVariationData/150evts",
           const std::string phiCutVariationTrackletingDir = "phiCutVariationData/single505",
+          const std::string tanLambdaCutVariationSelectionDir = "tanLambdaCutVariationData/150evts",
           const std::string path = "./")
 {
     // file load and stuff
@@ -773,6 +879,12 @@ int plots(const int inspEvt = -1,
         phiDBGFilesTrackleting.push_back(TFile::Open(Form("%s%s/dbg_ITSVertexerCPU_PhiCut_0%02d.root", path.data(), phiCutVariationTrackletingDir.data(), i)));
     }
 
+    std::vector<TFile *> tanLambdaDBGFilesTrackleting;
+    for (int i{1}; i < 12; ++i)
+    {
+        tanLambdaDBGFilesTrackleting.push_back(TFile::Open(Form("%s%s/dbg_ITSVertexerCPU_tanLambdaCut_%03d.root", path.data(), tanLambdaCutVariationSelectionDir.data(), i)));
+    }
+
     // config
     const int stopAt = (inspEvt == -1) ? rofs->size() : inspEvt + numEvents;
     const int startAt = (inspEvt == -1) ? 0 : inspEvt;
@@ -780,13 +892,12 @@ int plots(const int inspEvt = -1,
     itsClusters.GetEntry(0);
     mcHeaderTree.GetEntry(0);
 
-    // bC01->GetEntry(0);
-
     // Hereafter: direct calls to plotting functions
     // plotClusters(startAt, stopAt, rofs, clusters, labels);
     // plotDBGCPU(&dbgCPUFile, &l2tiFile);
-    plotPhiCutVariation(&l2tiFile, &dbgCPUFile, &dbgcpufileSingle505, phiDBGFilesTrackleting, phiDBGFilesSelection);
-    plotZCorrelations(phiDBGFilesTrackleting[0]);
+    // plotPhiCutVariation(&l2tiFile, &dbgCPUFile, &dbgcpufileSingle505, phiDBGFilesTrackleting, phiDBGFilesSelection);
+    // plotZCorrelations(phiDBGFilesTrackleting[0]);
+    plotTanLambdaVariation(&l2tiFile, tanLambdaDBGFilesTrackleting);
 
     return 0;
 }
