@@ -19,6 +19,7 @@
 #include <TTree.h>
 #include <ROOT/RDataFrame.hxx>
 #include <TMultiGraph.h>
+#include <THStack.h>
 
 #include <unordered_map>
 #include <list>
@@ -464,37 +465,59 @@ void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSi
     float good_v[11], fake_v[11], good01_v[11], fake01_v[11], good12_v[11], fake12_v[11], good_norm_v[11], good01_norm_v[11], good12_norm_v[11];
     int counter{0}, counter01{0}, counter12{0};
     auto umap = getLabelToTrackMap(l2tiFile);
-    int primaries{0}, allTracks{0};
+    int primaries{0};
     TTreeReader readerPMC01("combinatorics01", dbgCPUFileSingle);
     TTreeReader readerPMC12("combinatorics12", dbgCPUFileSingle);
-    auto a{readerPMC01.GetEntries()};
-    auto b{readerPMC12.GetEntries()};
+
+    TH1F *histReference = new TH1F("", "", 50, 0.f, 5.f);
+
+    auto norm01{readerPMC01.GetEntries()};
+    auto norm12{readerPMC12.GetEntries()};
     for (auto &l : umap)
     {
         if (l.second.getMotherTrackId() == -1 /* && TMath::Abs(l.second.GetPdgCode()) == 211*/)
+        {
             primaries++;
-        allTracks++;
+            histReference->Fill(l.second.GetPt());
+        }
     }
-
-    // const int norm = umap.size();
+    std::vector<TH1F *> histos(11);
+    std::vector<TH1F *> histosDivided(11);
+    THStack *hs = new THStack("deltaphiStack", "");
     for (auto fileptr : fileVectorSelection)
     {
+        auto umaptmp = getLabelToTrackMap(l2tiFile);
+        histos[counter] = new TH1F(Form("histodeltaphi%d", counter), Form("histo%d", counter), 50, 0.f, 5.f);
         int fake{0}, good{0};
         TTreeReader readerPhiCV("selectedTracklets", fileptr);
+        TTreeReaderValue<o2::MCCompLabel> labels(readerPhiCV, "lblClus0");
         TTreeReaderValue<unsigned char> validated(readerPhiCV, "isValidated");
         while (readerPhiCV.Next())
         {
             if (*validated)
+            {
+                auto it = umaptmp.find(*labels);
+                if (it != umaptmp.end())
+                {
+
+                    histos[counter]->Fill(it->second.GetPt());
+                    umaptmp.erase(it);
+                }
                 ++good;
+            }
             else
                 ++fake;
         }
-
-        good_v[counter] = good / (float)(good + fake);
-        fake_v[counter] = fake / (float)(good + fake);
-        good_norm_v[counter] = good / (float)(primaries);
+            histosDivided[counter] = (TH1F *)histos[counter]->Clone(Form("histoPhi%d", counter));
+            histosDivided[counter]->Divide(histos[counter], histReference);
+            hs->Add(histosDivided[counter]);
+            good_v[counter] = good / (float)(good + fake);
+            fake_v[counter] = fake / (float)(good + fake);
+            good_norm_v[counter] = good / (float)(primaries);
         ++counter;
     }
+    auto deltaPhiPtEff = new TCanvas("deltaphiPtEfficiencies", "deltaphiPtEfficiencies", 800, 600);
+    hs->Draw("nostack");
 
     auto goodFake = new TCanvas("goodFake", "goodFake", 800, 800);
     goodFake->SetGrid();
@@ -549,27 +572,16 @@ void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSi
         {
             if (*c01validated)
             {
-                // auto it = umap.find(*labels0);
-                // if (it != umap.end() && it->second.getMotherTrackId() == -1 && TMath::Abs(it->second.GetPdgCode()) == 211)
-                // {
                 ++good01;
-                // umap.erase(it);
-                // }
             }
             else
                 ++fake01;
         }
-        // umap = getLabelToTrackMap(l2tiFile);
         while (readerComb12.Next())
         {
             if (*c12validated)
             {
-                // auto it = umap.find(*labels2);
-                // if (it != umap.end() && it->second.getMotherTrackId() == -1 && TMath::Abs(it->second.GetPdgCode()) == 211)
-                // {
                 ++good12;
-                // umap.erase(it);
-                // }
             }
             else
                 ++fake12;
@@ -577,11 +589,11 @@ void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSi
 
         good01_v[counter01] = good01 / (double)(good01 + fake01);
         fake01_v[counter01] = fake01 / (double)(good01 + fake01);
-        good01_norm_v[counter01] = good01 / (double)(a);
+        good01_norm_v[counter01] = good01 / (double)(norm01);
 
         good12_v[counter12] = good12 / (double)(good12 + fake12);
         fake12_v[counter12] = fake12 / (double)(good12 + fake12);
-        good12_norm_v[counter12] = good12 / (double)(b);
+        good12_norm_v[counter12] = good12 / (double)(norm12);
         ++counter01;
         ++counter12;
     }
@@ -674,7 +686,7 @@ void plotTanLambdaVariation(TFile *l2tiFile, std::vector<TFile *> fileVectorSele
     int counter{0};
     auto umap = getLabelToTrackMap(l2tiFile);
     int primaries{0};
-    TH1F *histReference = new TH1F("", "", 200, 0.f, 5.f);
+    TH1F *histReference = new TH1F("", "", 50, 0.f, 5.f);
     for (auto &l : umap)
     {
         if (l.second.getMotherTrackId() /* == -1 && l.second.GetPt() >= 0.1*/)
@@ -683,13 +695,13 @@ void plotTanLambdaVariation(TFile *l2tiFile, std::vector<TFile *> fileVectorSele
             histReference->Fill(l.second.GetPt());
         }
     }
-    // TH1F *histReference = new TH1F("", "", 200, 0.f, 5.f);
     std::vector<TH1F *> histos(11);
     std::vector<TH1F *> histosDivided(11);
+    THStack *hs = new THStack("tanLambdaStack", "");
     for (auto fileptr : fileVectorSelection)
     {
         auto umaptmp = getLabelToTrackMap(l2tiFile);
-        histos[counter] = new TH1F(Form("histo%d", counter), Form("histo%d", counter), 200, 0.f, 5.f);
+        histos[counter] = new TH1F(Form("histo%d", counter), Form("histo%d", counter), 50, 0.f, 5.f);
         int fake{0}, good{0};
         TTreeReader readerPhiCV("selectedTracklets", fileptr);
         TTreeReaderValue<unsigned char> validated(readerPhiCV, "isValidated");
@@ -709,14 +721,17 @@ void plotTanLambdaVariation(TFile *l2tiFile, std::vector<TFile *> fileVectorSele
             else
                 ++fake;
         }
-        histosDivided[counter] = (TH1F*)histos[counter]->Clone(Form("histo%d", counter));
+        histosDivided[counter] = (TH1F *)histos[counter]->Clone(Form("histo%d", counter));
         histosDivided[counter]->Divide(histos[counter], histReference);
-        histosDivided[counter]->Draw("same");
+        hs->Add(histosDivided[counter]);
         good_v[counter] = good / (float)(good + fake);
         fake_v[counter] = fake / (float)(good + fake);
         good_norm_v[counter] = good / (float)(primaries);
         ++counter;
     }
+
+    auto tanLambdaPtEff = new TCanvas("tanLambdaPtEfficiencies", "tanLambdaPtEfficiencies", 800, 600);
+    hs->Draw("nostack");
 
     auto goodFake = new TCanvas("goodFake", "goodFake", 800, 800);
     goodFake->SetGrid();
@@ -895,9 +910,9 @@ int plots(const int inspEvt = -1,
     // Hereafter: direct calls to plotting functions
     // plotClusters(startAt, stopAt, rofs, clusters, labels);
     // plotDBGCPU(&dbgCPUFile, &l2tiFile);
-    // plotPhiCutVariation(&l2tiFile, &dbgCPUFile, &dbgcpufileSingle505, phiDBGFilesTrackleting, phiDBGFilesSelection);
+    plotPhiCutVariation(&l2tiFile, &dbgCPUFile, &dbgcpufileSingle505, phiDBGFilesTrackleting, phiDBGFilesSelection);
     // plotZCorrelations(phiDBGFilesTrackleting[0]);
-    plotTanLambdaVariation(&l2tiFile, tanLambdaDBGFilesTrackleting);
+    // plotTanLambdaVariation(&l2tiFile, tanLambdaDBGFilesTrackleting);
 
     return 0;
 }
