@@ -461,8 +461,9 @@ void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSi
                          std::vector<TFile *> fileVectorSelection)
 {
     gStyle->SetBarWidth(0.5);
-    float x[11] = {0.005, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1};
-    float good_v[11], fake_v[11], good01_v[11], fake01_v[11], good12_v[11], fake12_v[11], good_norm_v[11], good01_norm_v[11], good12_norm_v[11];
+    std::array<float, 11> x{0.005, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1};
+
+    std::array<float, 11> good_v, fake_v, good01_v, fake01_v, good12_v, fake12_v, good_norm_v, good01_norm_v, good12_norm_v;
     int counter{0}, counter01{0}, counter12{0};
     auto umap = getLabelToTrackMap(l2tiFile);
     int primaries{0};
@@ -484,6 +485,7 @@ void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSi
     std::vector<TH1F *> histos(11);
     std::vector<TH1F *> histosDivided(11);
     THStack *hs = new THStack("deltaphiStack", "");
+
     for (auto fileptr : fileVectorSelection)
     {
         auto umaptmp = getLabelToTrackMap(l2tiFile);
@@ -508,29 +510,30 @@ void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSi
             else
                 ++fake;
         }
-            histosDivided[counter] = (TH1F *)histos[counter]->Clone(Form("histoPhi%d", counter));
-            histosDivided[counter]->Divide(histos[counter], histReference);
-            hs->Add(histosDivided[counter]);
-            good_v[counter] = good / (float)(good + fake);
-            fake_v[counter] = fake / (float)(good + fake);
-            good_norm_v[counter] = good / (float)(primaries);
+        histosDivided[counter] = (TH1F *)histos[counter]->Clone(Form("histoPhi%d", counter));
+        histosDivided[counter]->Divide(histos[counter], histReference);
+        hs->Add(histosDivided[counter]);
+        good_v[counter] = good / (float)(good + fake);
+        fake_v[counter] = fake / (float)(good + fake);
+        good_norm_v[counter] = good / (float)(primaries);
         ++counter;
     }
+
     auto deltaPhiPtEff = new TCanvas("deltaphiPtEfficiencies", "deltaphiPtEfficiencies", 800, 600);
     hs->Draw("nostack");
 
     auto goodFake = new TCanvas("goodFake", "goodFake", 800, 800);
     goodFake->SetGrid();
     goodFake->cd();
-    TGraph *grGood = new TGraph(11, x, good_v);
+    TGraph *grGood = new TGraph(11, x.data(), good_v.data());
     grGood->SetLineColor(TColor::GetColor("#F9627D"));
     grGood->SetMarkerStyle(22);
     grGood->SetMarkerColor(TColor::GetColor("#F9627D"));
     grGood->SetLineWidth(2);
-    TGraph *grGoodNorm = new TGraph(11, x, good_norm_v);
+    TGraph *grGoodNorm = new TGraph(11, x.data(), good_norm_v.data());
     grGoodNorm->SetFillColor(kPurpleCT);
     grGoodNorm->SetFillStyle(3001);
-    TGraph *grFake = new TGraph(11, x, fake_v);
+    TGraph *grFake = new TGraph(11, x.data(), fake_v.data());
     grFake->SetLineColor(TColor::GetColor("#83B692"));
     grFake->SetMarkerStyle(23);
     grFake->SetMarkerColor(TColor::GetColor("#83B692"));
@@ -558,6 +561,46 @@ void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSi
     legendGoodVsFake->Draw();
     goodFake->SaveAs("/home/mconcas/cernbox/thesis_pictures/selectionEfficiencies.png", "r");
 
+    TMultiGraph *mg2 = new TMultiGraph();
+    std::vector<TGraph *> graphs;
+    graphs.resize(11);
+    mg2->SetTitle("Tracklet finding:  #Deltatan#lambda=0.01; #it{p}_{T} (GeV/#it{c}); efficiency");
+    mg2->SetMinimum(0.f);
+    for (auto iHisto{0}; iHisto < 11; ++iHisto)
+    {
+        graphs[iHisto] = new TGraph(histosDivided[iHisto]);
+        graphs[iHisto]->SetMarkerStyle(23);
+    }
+    // for (auto &graph : graphs)
+    // {
+    //     mg2->Add(&graph, "AP");
+    // }
+    mg2->SetMaximum(1.);
+    graphs[0]->SetMarkerColor(kRedCT);
+    graphs[0]->SetLineColor(kRedCT);
+    graphs[5]->SetMarkerColor(kBlueCT);
+    graphs[5]->SetLineColor(kBlueCT);
+    graphs[10]->SetMarkerColor(kGreenCT);
+    graphs[10]->SetLineColor(kGreenCT);
+
+    mg2->Add(graphs[0], "APL");
+    mg2->Add(graphs[5], "APL");
+    mg2->Add(graphs[10], "APL");
+
+    auto deltaPhiPtEffGraph = new TCanvas("deltaphiPtEfficienciesAsGraphs", "deltaphiPtEfficienciesAsGraphs", 800, 600);
+    mg2->Draw("a");
+    // Legend
+    gStyle->SetLegendTextSize(0.);
+    gStyle->SetLegendBorderSize(1);
+    auto legendEffPhiCut = new TLegend(0.5, 0.5, 0.85, 0.68);
+    legendEffPhiCut->SetHeader("150 events PbPb MB", "C");
+    legendEffPhiCut->AddEntry(graphs[0], "#Delta#phi=0.005 (rad)", "lp");
+    legendEffPhiCut->AddEntry(graphs[5], "#Delta#phi=0.05 (rad)", "lp");
+    legendEffPhiCut->AddEntry(graphs[10], "#Delta#phi=0.1 (rad)", "lp");
+    legendEffPhiCut->Draw();
+    goodFake->SaveAs("/home/mconcas/cernbox/thesis_pictures/phiCutEfficiencyTanLambdaFixed.png", "r");
+
+    //
     for (auto fileptr : fileVectorTrackleting)
     {
         long int fake01{0}, fake12{0}, good01{0}, good12{0};
@@ -601,15 +644,15 @@ void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSi
     auto goodFake01 = new TCanvas("goodFake01", "goodFake01", 800, 800);
     goodFake01->SetGrid();
     goodFake01->cd();
-    TGraph *grGood01 = new TGraph(11, x, good01_v);
+    TGraph *grGood01 = new TGraph(11, x.data(), good01_v.data());
     grGood01->SetLineColor(TColor::GetColor("#F9627D"));
     grGood01->SetMarkerStyle(22);
     grGood01->SetMarkerColor(TColor::GetColor("#F9627D"));
     grGood01->SetLineWidth(2);
-    TGraph *grGoodNorm01 = new TGraph(11, x, good01_norm_v);
+    TGraph *grGoodNorm01 = new TGraph(11, x.data(), good01_norm_v.data());
     grGoodNorm01->SetFillColor(kBlueCT);
     grGoodNorm01->SetFillStyle(3001);
-    TGraph *grFake01 = new TGraph(11, x, fake01_v);
+    TGraph *grFake01 = new TGraph(11, x.data(), fake01_v.data());
     grFake01->SetLineColor(TColor::GetColor("#83B692"));
     grFake01->SetMarkerStyle(23);
     grFake01->SetMarkerColor(TColor::GetColor("#83B692"));
@@ -641,15 +684,15 @@ void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSi
     auto goodFake12 = new TCanvas("goodFake12", "goodFake12", 800, 800);
     goodFake12->SetGrid();
     goodFake12->cd();
-    TGraph *grGood12 = new TGraph(11, x, good01_v);
+    TGraph *grGood12 = new TGraph(11, x.data(), good01_v.data());
     grGood12->SetLineColor(TColor::GetColor("#F9627D"));
     grGood12->SetMarkerStyle(22);
     grGood12->SetMarkerColor(TColor::GetColor("#F9627D"));
     grGood12->SetLineWidth(2);
-    TGraph *grGoodNorm12 = new TGraph(11, x, good01_norm_v);
+    TGraph *grGoodNorm12 = new TGraph(11, x.data(), good01_norm_v.data());
     grGoodNorm12->SetFillColor(kBrownCT);
     grGoodNorm12->SetFillStyle(3001);
-    TGraph *grFake12 = new TGraph(11, x, fake01_v);
+    TGraph *grFake12 = new TGraph(11, x.data(), fake01_v.data());
     grFake12->SetLineColor(TColor::GetColor("#83B692"));
     grFake12->SetMarkerStyle(23);
     grFake12->SetMarkerColor(TColor::GetColor("#83B692"));
@@ -912,7 +955,7 @@ int plots(const int inspEvt = -1,
     // plotDBGCPU(&dbgCPUFile, &l2tiFile);
     plotPhiCutVariation(&l2tiFile, &dbgCPUFile, &dbgcpufileSingle505, phiDBGFilesTrackleting, phiDBGFilesSelection);
     // plotZCorrelations(phiDBGFilesTrackleting[0]);
-    // plotTanLambdaVariation(&l2tiFile, tanLambdaDBGFilesTrackleting);
+    plotTanLambdaVariation(&l2tiFile, tanLambdaDBGFilesTrackleting);
 
     return 0;
 }
