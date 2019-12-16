@@ -571,10 +571,7 @@ void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSi
         graphs[iHisto] = new TGraph(histosDivided[iHisto]);
         graphs[iHisto]->SetMarkerStyle(23);
     }
-    // for (auto &graph : graphs)
-    // {
-    //     mg2->Add(&graph, "AP");
-    // }
+
     mg2->SetMaximum(1.);
     graphs[0]->SetMarkerColor(kRedCT);
     graphs[0]->SetLineColor(kRedCT);
@@ -588,7 +585,9 @@ void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSi
     mg2->Add(graphs[10], "APL");
 
     auto deltaPhiPtEffGraph = new TCanvas("deltaphiPtEfficienciesAsGraphs", "deltaphiPtEfficienciesAsGraphs", 800, 600);
+    deltaPhiPtEffGraph->SetGrid();
     mg2->Draw("a");
+
     // Legend
     gStyle->SetLegendTextSize(0.);
     gStyle->SetLegendBorderSize(1);
@@ -598,7 +597,7 @@ void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSi
     legendEffPhiCut->AddEntry(graphs[5], "#Delta#phi=0.05 (rad)", "lp");
     legendEffPhiCut->AddEntry(graphs[10], "#Delta#phi=0.1 (rad)", "lp");
     legendEffPhiCut->Draw();
-    goodFake->SaveAs("/home/mconcas/cernbox/thesis_pictures/phiCutEfficiencyTanLambdaFixed.png", "r");
+    deltaPhiPtEffGraph->SaveAs("/home/mconcas/cernbox/thesis_pictures/phiCutEfficiencyTanLambdaFixed.png", "r");
 
     //
     for (auto fileptr : fileVectorTrackleting)
@@ -732,7 +731,7 @@ void plotTanLambdaVariation(TFile *l2tiFile, std::vector<TFile *> fileVectorSele
     TH1F *histReference = new TH1F("", "", 50, 0.f, 5.f);
     for (auto &l : umap)
     {
-        if (l.second.getMotherTrackId() /* == -1 && l.second.GetPt() >= 0.1*/)
+        if (l.second.getMotherTrackId())
         {
             primaries++;
             histReference->Fill(l.second.GetPt());
@@ -795,10 +794,7 @@ void plotTanLambdaVariation(TFile *l2tiFile, std::vector<TFile *> fileVectorSele
     TMultiGraph *mg = new TMultiGraph();
     mg->SetTitle("Tracklet selection: #Delta#phi=0.01; #Deltatan#lambda; efficiency");
     gPad->Modified();
-    // mg->GetXaxis()->SetNdivisions(21);
-    // mg->GetXaxis()->SetLimits(0.f, 0.11f);
     mg->SetMinimum(0.f);
-    // mg->SetMaximum(2.f);
     mg->Add(grGoodNorm, "APB");
     mg->Add(grGood, "APL");
     mg->Add(grFake, "APL");
@@ -814,6 +810,60 @@ void plotTanLambdaVariation(TFile *l2tiFile, std::vector<TFile *> fileVectorSele
     legendGoodVsFake->AddEntry(grGoodNorm, "validated/MC_{primaries} ", "f");
     legendGoodVsFake->Draw();
     goodFake->SaveAs("/home/mconcas/cernbox/thesis_pictures/selectionEfficienciesTanLambda.png", "r");
+
+    TMultiGraph *mg2 = new TMultiGraph();
+    std::vector<TGraph *> graphs;
+    graphs.resize(11);
+    mg2->SetTitle("Tracklet finding:  #Delta#phi=0.01; #it{p}_{T} (GeV/#it{c}); efficiency");
+    mg2->SetMinimum(0.f);
+    for (auto iHisto{0}; iHisto < 11; ++iHisto)
+    {
+        graphs[iHisto] = new TGraph(histosDivided[iHisto]);
+        graphs[iHisto]->SetMarkerStyle(23);
+    }
+
+    mg2->SetMaximum(1.);
+    graphs[0]->SetMarkerColor(kRedCT);
+    graphs[0]->SetLineColor(kRedCT);
+    graphs[1]->SetMarkerColor(kBlueCT);
+    graphs[1]->SetLineColor(kBlueCT);
+    graphs[2]->SetMarkerColor(kPurpleCT);
+    graphs[2]->SetLineColor(kPurpleCT);
+    graphs[3]->SetMarkerColor(kOrangeCT);
+    graphs[3]->SetLineColor(kOrangeCT);
+    graphs[4]->SetMarkerColor(kMagentaCT);
+    graphs[4]->SetLineColor(kMagentaCT);
+    graphs[5]->SetMarkerColor(kBrownCT);
+    graphs[5]->SetLineColor(kBrownCT);
+    graphs[9]->SetMarkerColor(kGreenCT);
+    graphs[9]->SetLineColor(kGreenCT);
+
+    mg2->Add(graphs[0], "APL");
+    mg2->Add(graphs[1], "APL");
+    mg2->Add(graphs[2], "APL");
+    mg2->Add(graphs[3], "APL");
+    mg2->Add(graphs[4], "APL");
+    mg2->Add(graphs[5], "APL");
+    mg2->Add(graphs[9], "APL");
+
+    auto deltaTanLambdaPtCanvas = new TCanvas("deltatanlambdaPtEfficienciesAsGraphs", "deltatanlambdaPtEfficienciesAsGraphs", 800, 600);
+    deltaTanLambdaPtCanvas->SetGrid();
+    mg2->Draw("a");
+
+    // Legend
+    gStyle->SetLegendTextSize(0.);
+    gStyle->SetLegendBorderSize(1);
+    auto legendEffTanlambdaCutGraph = new TLegend(0.6, 0.14, 0.85, 0.38);
+    legendEffTanlambdaCutGraph->SetHeader("150 events PbPb MB", "C");
+    legendEffTanlambdaCutGraph->AddEntry(graphs[0], "#Deltatan#lambda=0.001", "lp");
+    legendEffTanlambdaCutGraph->AddEntry(graphs[1], "#Deltatan#lambda=0.002", "lp");
+    legendEffTanlambdaCutGraph->AddEntry(graphs[2], "#Deltatan#lambda=0.003", "lp");
+    legendEffTanlambdaCutGraph->AddEntry(graphs[3], "#Deltatan#lambda=0.004", "lp");
+    legendEffTanlambdaCutGraph->AddEntry(graphs[4], "#Deltatan#lambda=0.005", "lp");
+    legendEffTanlambdaCutGraph->AddEntry(graphs[4], "#Deltatan#lambda=0.006", "lp");
+    legendEffTanlambdaCutGraph->AddEntry(graphs[9], "#Deltatan#lambda=0.010", "lp");
+    legendEffTanlambdaCutGraph->Draw();
+    deltaTanLambdaPtCanvas->SaveAs("/home/mconcas/cernbox/thesis_pictures/tanlLambdaEfficiencyPhiCutFixed.png", "r");
 }
 
 void plotZCorrelations(TFile *fileptr)
