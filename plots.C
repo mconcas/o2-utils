@@ -307,7 +307,7 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
     TH2F *cluDeltaPhiPt = new TH2F("cluDeltaPhiPt", "Clusters: #it{p}_{T} vs #Delta#phi, 150 events PbPb minBias; #it{p}_{T} (GeV/#it{c}); #Delta#phi (rad)", 400, 0.f, 5.f, 400, 0.f, 0.01f);
     TH2F *cluDeltaZPt = new TH2F("cluDeltaZPt", "Clusters: #DeltaZ vs #it{p}_{T}, 150 events PbPb minBias; #it{p}_{T} (GeV/#it{c}); #DeltaZ (cm)", 400, 0.f, 5.f, 400, -10.f, 10.f);
     TH2F *trkDeltaPhiPt = new TH2F("trkDeltaPhiPt", "|#Delta#phi| vs #it{p}_{T} for correlated primary tracklets; #it{p}_{T} (GeV/#it{c}); |#Delta#phi| (rad)", 1000, 0.f, 5.f, 600, 0.f, 0.1 * TMath::Pi());
-    TH2F *trkDeltaLambdaPt = new TH2F("trkDeltaLambdaPt", "|#Delta#lambda| vs #it{p}_{T} for correlated primary tracklets; #it{p}_{T} (GeV/#it{c}); |#Delta#lambda| (rad)", 1000, 0.f, 5.f, 1000, 0.f, 0.1 * TMath::Pi());
+    TH2F *trkDeltaTanLambdaPt = new TH2F("trkDeltaTanLambdaPt", "|#Deltatan#lambda| vs #it{p}_{T} for correlated primary tracklets; #it{p}_{T} (GeV/#it{c}); |#Deltatan#lambda|", 1000, 0.f, 5.f, 1000, 0.f, 0.1 * TMath::Pi());
 
     while (readerST.Next())
     {
@@ -321,7 +321,7 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
             cluDeltaPhiPt->Fill(it->second.GetPt(), TMath::Abs((*c0phi) - (*c1phi)));
             cluDeltaZPt->Fill(it->second.GetPt(), (*c0z) - (*c1z));
             trkDeltaPhiPt->Fill(it->second.GetPt(), TMath::Abs(*deltaPhiST));
-            trkDeltaLambdaPt->Fill(it->second.GetPt(), TMath::Abs(TMath::ATan2((*c1z - *c0z), (*c1r - *c0r)) - TMath::ATan2((*c2z - *c1z), (*c2r - *c1r))));
+            trkDeltaTanLambdaPt->Fill(it->second.GetPt(), TMath::Abs(TMath::Tan(TMath::ATan2((*c1z - *c0z), (*c1r - *c0r))) - TMath::Tan(TMath::ATan2((*c2z - *c1z), (*c2r - *c1r)))));
             deltaPhi->Fill(TMath::Abs((*c0phi) - (*c1phi)));
             // Only pions
             if (TMath::Abs(it->second.GetPdgCode()) == 211)
@@ -415,19 +415,19 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
     cluDeltaZPt->SetDirectory(0);
     cluDeltaZPt->Draw("colz");
 
-    auto canvasTrackPtDeltaLambda = new TCanvas("trkDeltaLambdaPt", "trkDeltaLambdaPt", 1200, 1200);
+    auto canvasTrackPtDeltaLambda = new TCanvas("trkDeltaTanLambdaPt", "trkDeltaTanLambdaPt", 1200, 1200);
     canvasTrackPtDeltaLambda->SetGrid();
     canvasTrackPtDeltaLambda->cd();
     canvasTrackPtDeltaLambda->SetLogy();
-    trkDeltaLambdaPt->SetDirectory(0);
-    trkDeltaLambdaPt->Draw("colz");
+    trkDeltaTanLambdaPt->SetDirectory(0);
+    trkDeltaTanLambdaPt->Draw("colz");
 
     // Legend
     gStyle->SetLegendBorderSize(1);
-    auto legendTrkDeltaLambdaPt = new TLegend(0.6, 0.78, 0.87, 0.88);
-    legendTrkDeltaLambdaPt->SetHeader("150 events PbPb MB");
-    legendTrkDeltaLambdaPt->AddEntry(trkDeltaLambdaPt, Form("Entries: %d ", (int)trkDeltaLambdaPt->GetEntries()), "l");
-    legendTrkDeltaLambdaPt->Draw();
+    auto legendTrkDeltaTanLambdaPt = new TLegend(0.6, 0.78, 0.87, 0.88);
+    legendTrkDeltaTanLambdaPt->SetHeader("150 events PbPb MB");
+    legendTrkDeltaTanLambdaPt->AddEntry(trkDeltaTanLambdaPt, Form("Entries: %d ", (int)trkDeltaTanLambdaPt->GetEntries()), "l");
+    legendTrkDeltaTanLambdaPt->Draw();
 
     auto canvasTrackPtPhi = new TCanvas("trkDeltaZPt", "trkDeltaZPt", 1200, 1200);
     canvasTrackPtPhi->SetGrid();
@@ -455,7 +455,7 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
     canvasPtPhi->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersPtvsDeltaPhi.png", "r");
     canvasClusPtZ->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersPtvsDeltaZ.png", "r");
     canvasTrackPtPhi->SaveAs("/home/mconcas/cernbox/thesis_pictures/trackletsPtvsDeltaPhi.png", "r");
-    canvasTrackPtDeltaLambda->SaveAs("/home/mconcas/cernbox/thesis_pictures/trackletsPtvsDeltaLambda.png", "r");
+    canvasTrackPtDeltaLambda->SaveAs("/home/mconcas/cernbox/thesis_pictures/trackletsPtvsDeltaTanLambda.png", "r");
 }
 
 void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSingle, std::vector<TFile *> fileVectorTrackleting,
