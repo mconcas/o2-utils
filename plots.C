@@ -415,7 +415,7 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
     cluDeltaZPt->SetDirectory(0);
     cluDeltaZPt->Draw("colz");
 
-    auto canvasTrackPtDeltaLambda = new TCanvas("trkDeltaLambdaPt", "trkDeltaLambdaPt", 1200, 900);
+    auto canvasTrackPtDeltaLambda = new TCanvas("trkDeltaLambdaPt", "trkDeltaLambdaPt", 1200, 1200);
     canvasTrackPtDeltaLambda->SetGrid();
     canvasTrackPtDeltaLambda->cd();
     canvasTrackPtDeltaLambda->SetLogy();
@@ -429,7 +429,7 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
     legendTrkDeltaLambdaPt->AddEntry(trkDeltaLambdaPt, Form("Entries: %d ", (int)trkDeltaLambdaPt->GetEntries()), "l");
     legendTrkDeltaLambdaPt->Draw();
 
-    auto canvasTrackPtPhi = new TCanvas("trkDeltaZPt", "trkDeltaZPt", 1200, 900);
+    auto canvasTrackPtPhi = new TCanvas("trkDeltaZPt", "trkDeltaZPt", 1200, 1200);
     canvasTrackPtPhi->SetGrid();
     canvasTrackPtPhi->cd();
     canvasTrackPtPhi->SetLogy();
