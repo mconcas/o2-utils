@@ -98,11 +98,11 @@ void plotClusters(const int startAt,
     std::array<std::vector<o2::its::Cluster>, o2::its::constants::its::LayersNumberVertexer> itsclusters;
     gStyle->SetOptStat(0);
     TH1F *histClus0Phi =
-        new TH1F("Layer 0", "Azimuthal angle #phi, 150 events PbPb minBias;#phi (rad); N_{clusters}", 400, 0.f, TMath::TwoPi());
+        new TH1F("Layer0Phi", "Azimuthal angle #phi, 150 events PbPb minBias;#phi (rad); N_{clusters}", 400, 0.f, TMath::TwoPi());
     TH1F *histClus0R =
-        new TH1F("Layer 0", "Radial coordinate R, 150 events PbPb minBias;R (cm); N_{clusters}", 400, 2.f, 4.5f);
+        new TH1F("Layer0R", "Radial coordinate R, 150 events PbPb minBias;R (cm); N_{clusters}", 400, 2.f, 4.5f);
     TH1F *histClus0Z =
-        new TH1F("Layer 0", "Z coordinate, 150 events PbPb minBias;z (cm); N_{clusters}", 500, -15.5f, 15.5f);
+        new TH1F("Layer0Z", "Z coordinate, 150 events PbPb minBias;z (cm); N_{clusters}", 500, -15.5f, 15.5f);
 
     // Setup histograms
     histClus0Phi->SetMinimum(0);
@@ -118,11 +118,11 @@ void plotClusters(const int startAt,
     histClus0Z->SetFillStyle(1001);
 
     TH1F *histClus1Phi =
-        new TH1F("Layer 1", "Azimuthal angle #phi, 150 events PbPb minBias;#phi (rad); N_{clusters}", 400, 0.f, TMath::TwoPi());
+        new TH1F("Layer1Phi", "Azimuthal angle #phi, 150 events PbPb minBias;#phi (rad); N_{clusters}", 400, 0.f, TMath::TwoPi());
     TH1F *histClus1R =
-        new TH1F("Layer 1", "Radial coordinate R, 150 events PbPb minBias;R (cm); N_{clusters}", 400, 2.f, 4.5f);
+        new TH1F("Layer1R", "Radial coordinate R, 150 events PbPb minBias;R (cm); N_{clusters}", 400, 2.f, 4.5f);
     TH1F *histClus1Z =
-        new TH1F("Layer 1", "Z coordinate Z, 150 events PbPb minBias;z (cm); N_{clusters}", 500, -16.5f, 16.5f);
+        new TH1F("Layer1Z", "Z coordinate Z, 150 events PbPb minBias;z (cm); N_{clusters}", 500, -16.5f, 16.5f);
 
     histClus1Phi->SetFillColor(TColor::GetColor("#E4572E"));
     histClus1Phi->SetLineColor(TColor::GetColor("#E4572E"));
@@ -135,11 +135,11 @@ void plotClusters(const int startAt,
     histClus1Z->SetFillStyle(1001);
 
     TH1F *histClus2Phi =
-        new TH1F("Layer 2", "Azimuthal angle #phi, 150 events PbPb minBias;#phi (rad); N_{clusters}", 400, 0.f, TMath::TwoPi());
+        new TH1F("Layer2Phi", "Azimuthal angle #phi, 150 events PbPb minBias;#phi (rad); N_{clusters}", 400, 0.f, TMath::TwoPi());
     TH1F *histClus2R =
-        new TH1F("Layer 2", "Radial coordinate R, 150 events PbPb minBias;R (cm); N_{clusters}", 400, 2.f, 4.5f);
+        new TH1F("Layer2R", "Radial coordinate R, 150 events PbPb minBias;R (cm); N_{clusters}", 400, 2.f, 4.5f);
     TH1F *histClus2Z =
-        new TH1F("Layer 2", "Z coordinate Z, 150 events PbPb minBias;z (cm); N_{clusters}", 500, -16.5f, 16.5f);
+        new TH1F("Layer2Z", "Z coordinate Z, 150 events PbPb minBias;z (cm); N_{clusters}", 500, -16.5f, 16.5f);
     histClus1Phi->SetMinimum(0);
     histClus2Phi->SetFillColor(TColor::GetColor("#F3A712"));
     histClus2Phi->SetLineColor(TColor::GetColor("#F3A712"));
@@ -454,7 +454,7 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
     canvasPtPhi->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersPtvsDeltaPhi.png", "r");
     canvasClusPtZ->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersPtvsDeltaZ.png", "r");
     canvasTrackPtPhi->SaveAs("/home/mconcas/cernbox/thesis_pictures/trackletsPtvsDeltaPhi.png", "r");
-    canvasTrackPtDeltaLambda->SaveAs("/home/mconcas/cernbox/thesis_pictures/trackletsPtvsDeltaZ.png", "r");
+    canvasTrackPtDeltaLambda->SaveAs("/home/mconcas/cernbox/thesis_pictures/trackletsPtvsDeltaTanLambda.png", "r");
 }
 
 void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSingle, std::vector<TFile *> fileVectorTrackleting,
@@ -522,9 +522,9 @@ void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSi
     auto deltaPhiPtEff = new TCanvas("deltaphiPtEfficiencies", "deltaphiPtEfficiencies", 800, 600);
     hs->Draw("nostack");
 
-    auto goodFake = new TCanvas("goodFake", "goodFake", 800, 800);
-    goodFake->SetGrid();
-    goodFake->cd();
+    auto selEfficienciesCanvas = new TCanvas("selEfficiencies", "selEfficiencies", 800, 800);
+    selEfficienciesCanvas->SetGrid();
+    selEfficienciesCanvas->cd();
     TGraph *grGood = new TGraph(11, x.data(), good_v.data());
     grGood->SetLineColor(TColor::GetColor("#F9627D"));
     grGood->SetMarkerStyle(22);
@@ -559,7 +559,7 @@ void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSi
     legendGoodVsFake->AddEntry(grFake, "fake/found ", "lp");
     legendGoodVsFake->AddEntry(grGoodNorm, "validated/MC_{primaries} ", "f");
     legendGoodVsFake->Draw();
-    goodFake->SaveAs("/home/mconcas/cernbox/thesis_pictures/selectionEfficiencies.png", "r");
+    selEfficienciesCanvas->SaveAs("/home/mconcas/cernbox/thesis_pictures/selectionEfficiencies.png", "r");
 
     TMultiGraph *mg2 = new TMultiGraph();
     std::vector<TGraph *> graphs;
@@ -591,7 +591,7 @@ void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSi
     // Legend
     gStyle->SetLegendTextSize(0.);
     gStyle->SetLegendBorderSize(1);
-    auto legendEffPhiCut = new TLegend(0.5, 0.5, 0.85, 0.68);
+    auto legendEffPhiCut = new TLegend(0.6, 0.14, 0.85, 0.38);
     legendEffPhiCut->SetHeader("150 events PbPb MB", "C");
     legendEffPhiCut->AddEntry(graphs[0], "#Delta#phi=0.005 (rad)", "lp");
     legendEffPhiCut->AddEntry(graphs[5], "#Delta#phi=0.05 (rad)", "lp");
@@ -1001,10 +1001,10 @@ int plots(const int inspEvt = -1,
     mcHeaderTree.GetEntry(0);
 
     // Hereafter: direct calls to plotting functions
-    // plotClusters(startAt, stopAt, rofs, clusters, labels);
-    // plotDBGCPU(&dbgCPUFile, &l2tiFile);
+    plotClusters(startAt, stopAt, rofs, clusters, labels);
+    plotDBGCPU(&dbgCPUFile, &l2tiFile);
     plotPhiCutVariation(&l2tiFile, &dbgCPUFile, &dbgcpufileSingle505, phiDBGFilesTrackleting, phiDBGFilesSelection);
-    // plotZCorrelations(phiDBGFilesTrackleting[0]);
+    plotZCorrelations(phiDBGFilesTrackleting[0]);
     plotTanLambdaVariation(&l2tiFile, tanLambdaDBGFilesTrackleting);
 
     return 0;
