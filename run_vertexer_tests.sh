@@ -32,16 +32,20 @@
 # cd -
 
 # fix deltatanlambda and varies phi
+# cd /data1/ruben/pbpbVtx
+# root -l -b -q run_primary_vertexer_ITS.C++\(0.005,0.01,GPUDataTypes::DeviceType::CPU,false\) && mv dbg_ITSVertexerCPU.root phiCutVariationLargeTanLambda/dbg_ITSVertexerCPU_PhiCut_0005.root
+# root -l -b -q run_primary_vertexer_ITS.C++\(0.010,0.01,GPUDataTypes::DeviceType::CPU,false\) && mv dbg_ITSVertexerCPU.root phiCutVariationLargeTanLambda/dbg_ITSVertexerCPU_PhiCut_001.root
+# root -l -b -q run_primary_vertexer_ITS.C++\(0.020,0.01,GPUDataTypes::DeviceType::CPU,false\) && mv dbg_ITSVertexerCPU.root phiCutVariationLargeTanLambda/dbg_ITSVertexerCPU_PhiCut_002.root
+# root -l -b -q run_primary_vertexer_ITS.C++\(0.030,0.01,GPUDataTypes::DeviceType::CPU,false\) && mv dbg_ITSVertexerCPU.root phiCutVariationLargeTanLambda/dbg_ITSVertexerCPU_PhiCut_003.root
+# root -l -b -q run_primary_vertexer_ITS.C++\(0.040,0.01,GPUDataTypes::DeviceType::CPU,false\) && mv dbg_ITSVertexerCPU.root phiCutVariationLargeTanLambda/dbg_ITSVertexerCPU_PhiCut_004.root
+# root -l -b -q run_primary_vertexer_ITS.C++\(0.050,0.01,GPUDataTypes::DeviceType::CPU,false\) && mv dbg_ITSVertexerCPU.root phiCutVariationLargeTanLambda/dbg_ITSVertexerCPU_PhiCut_005.root
+# root -l -b -q run_primary_vertexer_ITS.C++\(0.060,0.01,GPUDataTypes::DeviceType::CPU,false\) && mv dbg_ITSVertexerCPU.root phiCutVariationLargeTanLambda/dbg_ITSVertexerCPU_PhiCut_006.root
+# root -l -b -q run_primary_vertexer_ITS.C++\(0.070,0.01,GPUDataTypes::DeviceType::CPU,false\) && mv dbg_ITSVertexerCPU.root phiCutVariationLargeTanLambda/dbg_ITSVertexerCPU_PhiCut_007.root
+# root -l -b -q run_primary_vertexer_ITS.C++\(0.080,0.01,GPUDataTypes::DeviceType::CPU,false\) && mv dbg_ITSVertexerCPU.root phiCutVariationLargeTanLambda/dbg_ITSVertexerCPU_PhiCut_008.root
+# root -l -b -q run_primary_vertexer_ITS.C++\(0.090,0.01,GPUDataTypes::DeviceType::CPU,false\) && mv dbg_ITSVertexerCPU.root phiCutVariationLargeTanLambda/dbg_ITSVertexerCPU_PhiCut_009.root
+# root -l -b -q run_primary_vertexer_ITS.C++\(0.100,0.01,GPUDataTypes::DeviceType::CPU,false\) && mv dbg_ITSVertexerCPU.root phiCutVariationLargeTanLambda/dbg_ITSVertexerCPU_PhiCut_010.root
+# cd -
+
 cd /data1/ruben/pbpbVtx
-root -l -b -q run_primary_vertexer_ITS.C++\(0.005,0.01,GPUDataTypes::DeviceType::CPU,false\) && mv dbg_ITSVertexerCPU.root phiCutVariationLargeTanLambda/dbg_ITSVertexerCPU_PhiCut_0005.root
-root -l -b -q run_primary_vertexer_ITS.C++\(0.010,0.01,GPUDataTypes::DeviceType::CPU,false\) && mv dbg_ITSVertexerCPU.root phiCutVariationLargeTanLambda/dbg_ITSVertexerCPU_PhiCut_001.root
-root -l -b -q run_primary_vertexer_ITS.C++\(0.020,0.01,GPUDataTypes::DeviceType::CPU,false\) && mv dbg_ITSVertexerCPU.root phiCutVariationLargeTanLambda/dbg_ITSVertexerCPU_PhiCut_002.root
-root -l -b -q run_primary_vertexer_ITS.C++\(0.030,0.01,GPUDataTypes::DeviceType::CPU,false\) && mv dbg_ITSVertexerCPU.root phiCutVariationLargeTanLambda/dbg_ITSVertexerCPU_PhiCut_003.root
-root -l -b -q run_primary_vertexer_ITS.C++\(0.040,0.01,GPUDataTypes::DeviceType::CPU,false\) && mv dbg_ITSVertexerCPU.root phiCutVariationLargeTanLambda/dbg_ITSVertexerCPU_PhiCut_004.root
-root -l -b -q run_primary_vertexer_ITS.C++\(0.050,0.01,GPUDataTypes::DeviceType::CPU,false\) && mv dbg_ITSVertexerCPU.root phiCutVariationLargeTanLambda/dbg_ITSVertexerCPU_PhiCut_005.root
-root -l -b -q run_primary_vertexer_ITS.C++\(0.060,0.01,GPUDataTypes::DeviceType::CPU,false\) && mv dbg_ITSVertexerCPU.root phiCutVariationLargeTanLambda/dbg_ITSVertexerCPU_PhiCut_006.root
-root -l -b -q run_primary_vertexer_ITS.C++\(0.070,0.01,GPUDataTypes::DeviceType::CPU,false\) && mv dbg_ITSVertexerCPU.root phiCutVariationLargeTanLambda/dbg_ITSVertexerCPU_PhiCut_007.root
-root -l -b -q run_primary_vertexer_ITS.C++\(0.080,0.01,GPUDataTypes::DeviceType::CPU,false\) && mv dbg_ITSVertexerCPU.root phiCutVariationLargeTanLambda/dbg_ITSVertexerCPU_PhiCut_008.root
-root -l -b -q run_primary_vertexer_ITS.C++\(0.090,0.01,GPUDataTypes::DeviceType::CPU,false\) && mv dbg_ITSVertexerCPU.root phiCutVariationLargeTanLambda/dbg_ITSVertexerCPU_PhiCut_009.root
-root -l -b -q run_primary_vertexer_ITS.C++\(0.100,0.01,GPUDataTypes::DeviceType::CPU,false\) && mv dbg_ITSVertexerCPU.root phiCutVariationLargeTanLambda/dbg_ITSVertexerCPU_PhiCut_010.root
+root -l -b -q run_primary_vertexer_ITS.C++\(0.1,0.1,GPUDataTypes::DeviceType::CPU,false\) && mv dbg_ITSVertexerCPU.root dbg_largestCuts.root
 cd -

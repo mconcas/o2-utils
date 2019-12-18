@@ -89,6 +89,23 @@ const int kYellowCT = TColor::GetColorTransparent(kYellowC, 0.2);
 const int kBrownC = TColor::GetColor("#b15928");
 const int kBrownCT = TColor::GetColorTransparent(kBrownC, 0.2);
 
+std::unordered_map<o2::MCCompLabel, o2::MCTrack> getLabelToTrackMap(TFile *file)
+{
+    std::unordered_map<o2::MCCompLabel, o2::MCTrack> umap;
+    TTreeReader readerl2T("Labels2Tracks", file);
+    TTreeReaderValue<std::vector<o2::MCCompLabel>> labels(readerl2T, "MCLabels");
+    TTreeReaderValue<std::vector<o2::MCTrack>> tracks(readerl2T, "Tracks");
+    while (readerl2T.Next())
+    {
+        for (size_t i{0}; i < (*labels).size(); ++i)
+        {
+            umap.emplace((*labels)[i], (*tracks)[i]);
+        }
+    }
+
+    return umap;
+}
+
 void plotClusters(const int startAt,
                   const int stopAt,
                   std::vector<o2::itsmft::ROFRecord> *rofs,
@@ -160,7 +177,6 @@ void plotClusters(const int startAt,
             layer.clear();
         auto &rof = (*rofs)[iROfCount];
         o2::its::ROframe frame{iROfCount}; // to get meaningful roframeId
-        // std::cout << "ROframe: " << iROfCount << std::endl;
         int nclUsed = o2::its::ioutils::loadROFrameData(rof, frame, clusters, labels);
         o2::its::arrangeClusters(&frame, itsclusters);
 
@@ -262,23 +278,6 @@ void plotClusters(const int startAt,
     canvasClustersZ->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersZ.png", "r");
     canvasRphi->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersRPhi.png", "r");
     canvasRphi->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersRPhi.png", "r");
-}
-
-std::unordered_map<o2::MCCompLabel, o2::MCTrack> getLabelToTrackMap(TFile *file)
-{
-    std::unordered_map<o2::MCCompLabel, o2::MCTrack> umap;
-    TTreeReader readerl2T("Labels2Tracks", file);
-    TTreeReaderValue<std::vector<o2::MCCompLabel>> labels(readerl2T, "MCLabels");
-    TTreeReaderValue<std::vector<o2::MCTrack>> tracks(readerl2T, "Tracks");
-    while (readerl2T.Next())
-    {
-        for (size_t i{0}; i < (*labels).size(); ++i)
-        {
-            umap.emplace((*labels)[i], (*tracks)[i]);
-        }
-    }
-
-    return umap;
 }
 
 void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
@@ -540,12 +539,12 @@ void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSi
     grFake->SetMarkerColor(TColor::GetColor("#83B692"));
     grFake->SetLineWidth(2);
     TMultiGraph *mg = new TMultiGraph();
-    mg->SetTitle("Tracklet selection: #Deltatan#lambda=0.002; #Delta#phi (rad); efficiency");
+    mg->SetTitle("Tracklet selection: #Deltatan#lambda=0.01; #Delta#phi (rad); efficiency");
     gPad->Modified();
     mg->GetXaxis()->SetNdivisions(21);
     mg->GetXaxis()->SetLimits(0.f, 0.11f);
     mg->SetMinimum(0.f);
-    // mg->SetMaximum(1.f);
+    mg->SetMaximum(1.f);
     mg->Add(grGoodNorm, "APB");
     mg->Add(grGood, "APL");
     mg->Add(grFake, "APL");
@@ -732,7 +731,7 @@ void plotTanLambdaVariation(TFile *l2tiFile, std::vector<TFile *> fileVectorSele
     TH1F *histReference = new TH1F("", "", 50, 0.f, 5.f);
     for (auto &l : umap)
     {
-        if (l.second.getMotherTrackId())
+        if (l.second.getMotherTrackId() == -1)
         {
             primaries++;
             histReference->Fill(l.second.GetPt());
@@ -793,9 +792,10 @@ void plotTanLambdaVariation(TFile *l2tiFile, std::vector<TFile *> fileVectorSele
     grFake->SetMarkerColor(TColor::GetColor("#83B692"));
     grFake->SetLineWidth(2);
     TMultiGraph *mg = new TMultiGraph();
-    mg->SetTitle("Tracklet selection: #Delta#phi=0.01; #Deltatan#lambda; efficiency");
+    mg->SetTitle("Tracklet selection: #Delta#phi=0.1; #Deltatan#lambda; efficiency");
     gPad->Modified();
     mg->SetMinimum(0.f);
+    mg->SetMaximum(1.f);
     mg->Add(grGoodNorm, "APB");
     mg->Add(grGood, "APL");
     mg->Add(grFake, "APL");
