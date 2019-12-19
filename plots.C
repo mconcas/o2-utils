@@ -584,7 +584,7 @@ void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSi
     mg2->Add(graphs[5], "APL");
     mg2->Add(graphs[10], "APL");
 
-    auto deltaPhiPtEffGraph = new TCanvas("deltaphiPtEfficienciesAsGraphs", "deltaphiPtEfficienciesAsGraphs", 800, 600);
+    auto deltaPhiPtEffGraph = new TCanvas("deltaphiPtEfficienciesAsGraphs", "deltaphiPtEfficienciesAsGraphs", 800, 800);
     deltaPhiPtEffGraph->SetGrid();
     mg2->Draw("a");
 
@@ -815,7 +815,7 @@ void plotTanLambdaVariation(TFile *l2tiFile, std::vector<TFile *> fileVectorSele
     TMultiGraph *mg2 = new TMultiGraph();
     std::vector<TGraph *> graphs;
     graphs.resize(11);
-    mg2->SetTitle("Tracklet finding:  #Delta#phi=0.01; #it{p}_{T} (GeV/#it{c}); efficiency");
+    mg2->SetTitle("Tracklet finding:  #Delta#phi=0.1; #it{p}_{T} (GeV/#it{c}); efficiency");
     mg2->SetMinimum(0.f);
     for (auto iHisto{0}; iHisto < 11; ++iHisto)
     {
@@ -847,7 +847,7 @@ void plotTanLambdaVariation(TFile *l2tiFile, std::vector<TFile *> fileVectorSele
     mg2->Add(graphs[5], "APL");
     mg2->Add(graphs[9], "APL");
 
-    auto deltaTanLambdaPtCanvas = new TCanvas("deltatanlambdaPtEfficienciesAsGraphs", "deltatanlambdaPtEfficienciesAsGraphs", 800, 600);
+    auto deltaTanLambdaPtCanvas = new TCanvas("deltatanlambdaPtEfficienciesAsGraphs", "deltatanlambdaPtEfficienciesAsGraphs", 800, 800);
     deltaTanLambdaPtCanvas->SetGrid();
     mg2->Draw("a");
 
