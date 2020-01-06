@@ -522,7 +522,7 @@ void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSi
     auto deltaPhiPtEff = new TCanvas("deltaphiPtEfficiencies", "deltaphiPtEfficiencies", 800, 600);
     hs->Draw("nostack");
 
-    auto selEfficienciesCanvas = new TCanvas("selEfficiencies", "selEfficiencies", 800, 800);
+    auto selEfficienciesCanvas = new TCanvas("selEfficiencies", "selEfficiencies", 800, 600);
     selEfficienciesCanvas->SetGrid();
     selEfficienciesCanvas->cd();
     TGraph *grGood = new TGraph(11, x.data(), good_v.data());
@@ -720,7 +720,7 @@ void plotPhiCutVariation(TFile *l2tiFile, TFile *dbgCPUFile, TFile *dbgCPUFileSi
     goodFake12->SaveAs("/home/mconcas/cernbox/thesis_pictures/trackleting12Efficiencies.png", "r");
 }
 
-void plotTanLambdaVariation(TFile *l2tiFile, std::vector<TFile *> fileVectorSelection)
+void plotTanLambdaVariation(TFile *l2tiFile, std::vector<TFile *> fileVectorSelection, std::vector<TFile *> fileVectorSelectionNarrow)
 {
     gStyle->SetBarWidth(0.5);
     float tanLambdaCuts[11] = {0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008, 0.009, 0.010, 0.011};
@@ -775,7 +775,7 @@ void plotTanLambdaVariation(TFile *l2tiFile, std::vector<TFile *> fileVectorSele
     auto tanLambdaPtEff = new TCanvas("tanLambdaPtEfficiencies", "tanLambdaPtEfficiencies", 800, 600);
     hs->Draw("nostack");
 
-    auto goodFake = new TCanvas("goodFake", "goodFake", 800, 800);
+    auto goodFake = new TCanvas("goodFake", "goodFake", 800, 600);
     goodFake->SetGrid();
     goodFake->cd();
     TGraph *grGood = new TGraph(11, tanLambdaCuts, good_v);
@@ -865,6 +865,73 @@ void plotTanLambdaVariation(TFile *l2tiFile, std::vector<TFile *> fileVectorSele
     legendEffTanlambdaCutGraph->AddEntry(graphs[9], "#Deltatan#lambda=0.010", "lp");
     legendEffTanlambdaCutGraph->Draw();
     deltaTanLambdaPtCanvas->SaveAs("/home/mconcas/cernbox/thesis_pictures/tanlLambdaEfficiencyPhiCutFixed.png", "r");
+
+    // ------------------------------------------ narrow phi cut
+    float good_narrow_v[11], fake_narrow_v[11], good_narrow_norm_v[11];
+    int counter_narrow{0};
+    for (auto fileptr : fileVectorSelectionNarrow)
+    {
+        auto umaptmp = getLabelToTrackMap(l2tiFile);
+        int fake{0}, good{0};
+        TTreeReader readerPhiCV("selectedTracklets", fileptr);
+        TTreeReaderValue<unsigned char> validated(readerPhiCV, "isValidated");
+        TTreeReaderValue<o2::MCCompLabel> labels(readerPhiCV, "lblClus0");
+        while (readerPhiCV.Next())
+        {
+            if (*validated)
+            {
+                ++good;
+                auto it = umaptmp.find(*labels);
+                if (it != umaptmp.end())
+                {
+                    histos[counter_narrow]->Fill(it->second.GetPt());
+                    umaptmp.erase(it);
+                }
+            }
+            else
+                ++fake;
+        }
+        good_narrow_v[counter_narrow] = good / (float)(good + fake);
+        fake_narrow_v[counter_narrow] = fake / (float)(good + fake);
+        good_narrow_norm_v[counter_narrow] = good / (float)(primaries);
+        ++counter_narrow;
+    }
+    auto goodFake_narrow = new TCanvas("goodFake_narrow", "goodFake_narrow", 800, 600);
+    goodFake_narrow->SetGrid();
+    goodFake_narrow->cd();
+    TGraph *grGood_narrow = new TGraph(11, tanLambdaCuts, good_narrow_v);
+    grGood_narrow->SetLineColor(TColor::GetColor("#F9627D"));
+    grGood_narrow->SetMarkerStyle(22);
+    grGood_narrow->SetMarkerColor(TColor::GetColor("#F9627D"));
+    grGood_narrow->SetLineWidth(2);
+    TGraph *grGood_narrow_Norm = new TGraph(11, tanLambdaCuts, good_narrow_norm_v);
+    grGood_narrow_Norm->SetFillColor(kPurpleCT);
+    grGood_narrow_Norm->SetFillStyle(3001);
+    TGraph *gr_narrow_Fake = new TGraph(11, tanLambdaCuts, fake_narrow_v);
+    gr_narrow_Fake->SetLineColor(TColor::GetColor("#83B692"));
+    gr_narrow_Fake->SetMarkerStyle(23);
+    gr_narrow_Fake->SetMarkerColor(TColor::GetColor("#83B692"));
+    gr_narrow_Fake->SetLineWidth(2);
+    TMultiGraph *mg_narrow = new TMultiGraph();
+    mg_narrow->SetTitle("Tracklet selection: #Delta#phi=0.005; #Deltatan#lambda; efficiency");
+    gPad->Modified();
+    mg_narrow->SetMinimum(0.f);
+    mg_narrow->SetMaximum(1.f);
+    mg_narrow->Add(grGood_narrow_Norm, "APB");
+    mg_narrow->Add(grGood_narrow, "APL");
+    mg_narrow->Add(gr_narrow_Fake, "APL");
+    mg_narrow->Draw("a");
+
+    // Legend
+    gStyle->SetLegendTextSize(0.);
+    gStyle->SetLegendBorderSize(1);
+    auto legendGoodVsFake_narrow = new TLegend(0.5, 0.3, 0.85, 0.48);
+    legendGoodVsFake_narrow->SetHeader("150 events PbPb MB", "C");
+    legendGoodVsFake_narrow->AddEntry(grGood_narrow, "validated/found ", "lp");
+    legendGoodVsFake_narrow->AddEntry(gr_narrow_Fake, "fake/found ", "lp");
+    legendGoodVsFake_narrow->AddEntry(grGood_narrow_Norm, "validated/MC_{primaries} ", "f");
+    legendGoodVsFake_narrow->Draw();
+    goodFake_narrow->SaveAs("/home/mconcas/cernbox/thesis_pictures/selectionEfficienciesTanLambdaNarrow.png", "r");
 }
 
 void plotZCorrelations(TFile *fileptr)
@@ -929,6 +996,7 @@ int plots(const int inspEvt = -1,
           const std::string phiCutVariationSelectionDir = "phiCutVariationLargeTanLambda/150evts",
           const std::string phiCutVariationTrackletingDir = "phiCutVariationData/single505",
           const std::string tanLambdaCutVariationSelectionDir = "tanLambdaCutVariationData/150evts",
+          const std::string tanlambdawithnarrowphipath = "tanlambdaVariation/150evts",
           const std::string path = "./")
 {
     // file load and stuff
@@ -994,6 +1062,12 @@ int plots(const int inspEvt = -1,
         tanLambdaDBGFilesTrackleting.push_back(TFile::Open(Form("%s%s/dbg_ITSVertexerCPU_tanLambdaCut_%03d.root", path.data(), tanLambdaCutVariationSelectionDir.data(), i)));
     }
 
+    std::vector<TFile *> tanlambdaVariationfiles;
+    tanlambdaVariationfiles.push_back(TFile::Open(Form("%s%s/dbg_ITSVertexerCPU_tanLambdaCut_0005.root", path.data(), tanlambdawithnarrowphipath.data())));
+    for (int i{1}; i < 11; ++i)
+    {
+        tanlambdaVariationfiles.push_back(TFile::Open(Form("%s%s/dbg_ITSVertexerCPU_tanLambdaCut_%03d.root", path.data(), tanlambdawithnarrowphipath.data(), i)));
+    }
     // config
     const int stopAt = (inspEvt == -1) ? rofs->size() : inspEvt + numEvents;
     const int startAt = (inspEvt == -1) ? 0 : inspEvt;
@@ -1002,11 +1076,11 @@ int plots(const int inspEvt = -1,
     mcHeaderTree.GetEntry(0);
 
     // Hereafter: direct calls to plotting functions
-    plotClusters(startAt, stopAt, rofs, clusters, labels);
-    plotDBGCPU(&dbgCPUFile, &l2tiFile);
+    // plotClusters(startAt, stopAt, rofs, clusters, labels);
+    // plotDBGCPU(&dbgCPUFile, &l2tiFile);
     plotPhiCutVariation(&l2tiFile, &dbgCPUFile, &dbgcpufileSingle505, phiDBGFilesTrackleting, phiDBGFilesSelection);
-    plotZCorrelations(phiDBGFilesTrackleting[0]);
-    plotTanLambdaVariation(&l2tiFile, tanLambdaDBGFilesTrackleting);
+    // plotZCorrelations(phiDBGFilesTrackleting[0]);
+    plotTanLambdaVariation(&l2tiFile, tanLambdaDBGFilesTrackleting, tanlambdaVariationfiles);
 
     return 0;
 }
