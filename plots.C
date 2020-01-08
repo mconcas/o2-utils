@@ -34,6 +34,7 @@
 #include "ITSBase/GeometryTGeo.h"
 #include "ITStracking/IOUtils.h"
 #include "ITStracking/Vertexer.h"
+#include "ROOT/RDataFrame.hxx"
 
 // #include "GPUO2Interface.h"
 // #include "GPUReconstruction.h"
@@ -984,6 +985,62 @@ void plotZCorrelations(TFile *fileptr)
     canvasz1z2->SaveAs("/home/mconcas/cernbox/thesis_pictures/z1z2correlations.png", "r");
 }
 
+void plotPaircuts(TFile *noMcFile, TFile *mcFile)
+{
+    gStyle->SetOptStat(0);
+    gStyle->SetOptFit(0);
+    ROOT::EnableImplicitMT();
+    auto noMCTreeLS = ROOT::RDataFrame("linesSummary", noMcFile);
+    auto mcTreeLS = ROOT::RDataFrame("linesSummary", mcFile);
+    auto noMCTreePairInfo = ROOT::RDataFrame("pairInfo", noMcFile);
+    auto mcTreePairInfo = ROOT::RDataFrame("pairInfo", mcFile);
+
+    auto histDCAPairsNoMC = noMCTreePairInfo.Histo1D({"pairDCA", "Pair of lines DCA: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.01; DCA (cm); #pairs", 300u, 0.f, 0.5f}, "DCApair");
+    auto histDCAPairsMC = mcTreePairInfo.Histo1D({"pairDCAMC", "Pair of lines DCA: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.01; DCA (cm); #pairs", 300u, 0.f, 0.4f}, "DCApair");
+    auto histDCAZaxisNoMC = noMCTreeLS.Histo1D({"DCAZ", "Lines DCA from Z axis: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.01; DCA (cm); #tracklets", 300u, 0.f, 0.f}, "DCAZaxis");
+    auto histDCAZaxisMC = mcTreeLS.Histo1D({"DCAZMC", "Lines DCA from Z axis: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.01; DCA (cm); #tracklets", 300u, 0.f, 0.f}, "DCAZaxis");
+    auto histDCAOriginNoMC = noMCTreeLS.Histo1D({"DCAOrigin", "Lines DCA from MC vertex: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.01; DCA (cm); #tracklets", 300u, 0.f, 0.f}, "DCAOrigin");
+    auto histDCAOriginMC = mcTreeLS.Histo1D({"DCAOriginMC", "Lines DCA from MC vertex: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.01; DCA (cm); #tracklets", 300u, 0.f, 0.f}, "DCAOrigin");
+
+    auto canvasDCApairs = new TCanvas("DCApairs", "DCApairs", 800, 600);
+    canvasDCApairs->SetLogy();
+    histDCAPairsMC->SetMinimum(1);
+    auto gaussiana = new TF1("mygaus", "gaus", 0.f, 0.5f);
+    histDCAPairsMC->Fit(gaussiana);
+
+    // histDCAPairsMC->SetFillColor(kGreenC);
+    // histDCAPairsMC->SetLineColor(kGreenC);
+
+    // histDCAPairsNoMC->DrawClone();
+    histDCAPairsMC->DrawClone();
+
+    // Legend
+    gStyle->SetLegendBorderSize(1);
+    auto legend1 = new TLegend(0.5, 0.68, 0.87, 0.78);
+    auto legend2 = new TLegend(0.5, 0.48, 0.87, 0.68);
+    legend1->SetHeader("150 PbPb events", "C");
+    legend1->AddEntry("pairDCAMC", Form("Entries: %d", (int)histDCAPairsMC->GetEntries()), "l");
+    legend2->SetHeader("Fit parameters", "C");
+    legend2->AddEntry("pairDCAMC", Form("constant: %f#pm%f ", gaussiana->GetParameter(0), gaussiana->GetParError(0)), "");
+    legend2->AddEntry("pairDCAMC", Form("mean: %f#pm%f ", gaussiana->GetParameter(1), gaussiana->GetParError(1)), "");
+    legend2->AddEntry("pairDCAMC", Form("sigma: %f#pm%f ", gaussiana->GetParameter(2), gaussiana->GetParError(2)), "");
+    legend1->Draw();
+    legend2->Draw();
+    canvasDCApairs->SaveAs("/home/mconcas/cernbox/thesis_pictures/dcamontecarlopairs.png", "r");
+
+    // auto canvasDCAZaxis = new TCanvas("DCAZaxis", "DCAZAxis", 800, 600);
+    // canvasDCAZaxis->SetLogy();
+    // histDCAZaxisNoMC->SetFillColor(TColor::GetColor("#29335C"));
+    // histDCAZaxisNoMC->SetLineColor(TColor::GetColor("#29335C"));
+    // histDCAZaxisNoMC->DrawClone();
+    // histDCAZaxisMC->DrawClone("same");
+
+    // auto canvasDCAOrigin = new TCanvas("DCAOrigin", "DCAOrigin", 800, 600);
+    // canvasDCAOrigin->SetLogy();
+    // histDCAOriginNoMC->DrawClone();
+    // histDCAOriginMC->DrawClone("same");
+}
+
 int plots(const int inspEvt = -1,
           const int numEvents = 1,
           const std::string inputClustersITS = "o2clus_its.root",
@@ -997,6 +1054,10 @@ int plots(const int inspEvt = -1,
           const std::string phiCutVariationTrackletingDir = "phiCutVariationData/single505",
           const std::string tanLambdaCutVariationSelectionDir = "tanLambdaCutVariationData/150evts",
           const std::string tanlambdawithnarrowphipath = "tanlambdaVariation/150evts",
+          const std::string pairCutsDirPath = "paircuts/150evts/",
+          const std::string pairCutsfile = "dbg_ITSVertexerCPU_005_001_noMC.root",
+          const std::string pairCutsMCfile = "dbg_ITSVertexerCPU_005_001_MC.root",
+
           const std::string path = "./")
 {
     // file load and stuff
@@ -1068,6 +1129,10 @@ int plots(const int inspEvt = -1,
     {
         tanlambdaVariationfiles.push_back(TFile::Open(Form("%s%s/dbg_ITSVertexerCPU_tanLambdaCut_%03d.root", path.data(), tanlambdawithnarrowphipath.data(), i)));
     }
+
+    TFile *pairFile = TFile::Open((path + pairCutsDirPath + pairCutsfile).data());
+    TFile *pairMCFile = TFile::Open((path + pairCutsDirPath + pairCutsMCfile).data());
+
     // config
     const int stopAt = (inspEvt == -1) ? rofs->size() : inspEvt + numEvents;
     const int startAt = (inspEvt == -1) ? 0 : inspEvt;
@@ -1078,9 +1143,10 @@ int plots(const int inspEvt = -1,
     // Hereafter: direct calls to plotting functions
     // plotClusters(startAt, stopAt, rofs, clusters, labels);
     // plotDBGCPU(&dbgCPUFile, &l2tiFile);
-    plotPhiCutVariation(&l2tiFile, &dbgCPUFile, &dbgcpufileSingle505, phiDBGFilesTrackleting, phiDBGFilesSelection);
+    // plotPhiCutVariation(&l2tiFile, &dbgCPUFile, &dbgcpufileSingle505, phiDBGFilesTrackleting, phiDBGFilesSelection);
     // plotZCorrelations(phiDBGFilesTrackleting[0]);
-    plotTanLambdaVariation(&l2tiFile, tanLambdaDBGFilesTrackleting, tanlambdaVariationfiles);
+    // plotTanLambdaVariation(&l2tiFile, tanLambdaDBGFilesTrackleting, tanlambdaVariationfiles);
+    plotPaircuts(pairFile, pairMCFile);
 
     return 0;
 }
