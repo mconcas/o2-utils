@@ -1000,17 +1000,17 @@ void plotPaircuts(TFile *noMcFile, TFile *mcFile)
 
     auto histDCAPairsNoMC = noMCTreePairInfo.Histo1D({"pairDCA", "Pair of lines DCA: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.002; DCA (cm); #pairs", 300u, 0.f, 0.5f}, "DCApair");
     auto histDCAPairsMC = mcTreePairInfo.Histo1D({"pairDCAMC", "Pair of lines DCA: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.002; DCA (cm); #pairs", 300u, 0.f, 0.4f}, "DCApair");
-    auto histCentroidsTransverse = mcTreePairInfo.Histo2D({"centCoord", "MC validated centroid xy-projection, 150 PbPb events, v=(0,0,0)s; x (cm); y (cm)", 300u, -0.1f, 0.1f, 300u, -0.1f, 0.1f}, "xCoord", "yCoord");
-    auto histCentroidsTransverseUnzoomed = mcTreePairInfo.Histo2D({"centCoordunzoomed", "MC validated centroid xy-projections, 150 PbPb events, v=(0,0,0); x (cm); y (cm)", 300u, -2.0f, 2.0f, 300u, -2.0f, 2.0f}, "xCoord", "yCoord");
+    auto histCentroidsTransverse = mcTreePairInfo.Histo2D({"centCoord", "MC validated centroid xy-projection, 150 PbPb events, v=(0,0,0); x (cm); y (cm)", 100, -0.1f, 0.1f, 100, -0.1f, 0.1f}, "xCoord", "yCoord");
+    auto histCentroidsTransverseUnzoomed = mcTreePairInfo.Histo2D({"centCoordunzoomed", "MC validated centroid xy-projections, 150 PbPb events, v=(0,0,0); x (cm); y (cm)", 100u, -2.0f, 2.0f, 100u, -2.0f, 2.0f}, "xCoord", "yCoord");
 
-    auto histCentroidsNoMC = noMCTreePairInfo.Histo2D({"histCentroidsNoMC", "Centroids xy-projections, 150 PbPb events, v=(0,0,0); x (cm); y (cm)", 300u, -2.0f, 2.0f, 300u, -2.0f, 2.0f}, "xCoord", "yCoord");
+    auto histCentroidsNoMC = noMCTreePairInfo.Histo2D({"histCentroidsNoMC", "Centroids xy-projections, 150 PbPb events, v=(0,0,0); x (cm); y (cm)", 100u, -2.0f, 2.0f, 100u, -2.0f, 2.0f}, "xCoord", "yCoord");
 
-    auto histCentroidsNoMCz = noMCTreePairInfo.Histo2D({"histCentroidsNoMCz", "Centroids xy-projections, 150 PbPb events, v=(0,0,0); x (cm); y (cm)", 300u, -0.1f, 0.1f, 300u, -0.1f, 0.1f}, "xCoord", "yCoord");
+    auto histCentroidsNoMCz = noMCTreePairInfo.Histo2D({"histCentroidsNoMCz", "Centroids xy-projections, 150 PbPb events, v=(0,0,0); x (cm); y (cm)", 100, -0.1f, 0.1f, 100, -0.1f, 0.1f}, "xCoord", "yCoord");
 
-    auto histDCAZaxisNoMC = noMCTreeLS.Histo1D({"DCAZ", "Lines DCA from Z axis: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.01; DCA (cm); #tracklets", 300u, 0.f, 0.f}, "DCAZaxis");
-    auto histDCAZaxisMC = mcTreeLS.Histo1D({"DCAZMC", "Lines DCA from Z axis: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.01; DCA (cm); #tracklets", 300u, 0.f, 0.f}, "DCAZaxis");
-    auto histDCAOriginNoMC = noMCTreeLS.Histo1D({"DCAOrigin", "Lines DCA from MC vertex: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.01; DCA (cm); #tracklets", 300u, 0.f, 0.f}, "DCAOrigin");
-    auto histDCAOriginMC = mcTreeLS.Histo1D({"DCAOriginMC", "Lines DCA from MC vertex: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.01; DCA (cm); #tracklets", 300u, 0.f, 0.f}, "DCAOrigin");
+    auto histDCAZaxisNoMC = noMCTreeLS.Histo1D({"DCAZ", "Lines DCA from Z axis: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.01; DCA (cm); #tracklets", 100u, 0.f, 0.f}, "DCAZaxis");
+    auto histDCAZaxisMC = mcTreeLS.Histo1D({"DCAZMC", "Lines DCA from Z axis: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.01; DCA (cm); #tracklets", 100u, 0.f, 0.f}, "DCAZaxis");
+    auto histDCAOriginNoMC = noMCTreeLS.Histo1D({"DCAOrigin", "Lines DCA from MC vertex: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.01; DCA (cm); #tracklets", 100u, 0.f, 0.f}, "DCAOrigin");
+    auto histDCAOriginMC = mcTreeLS.Histo1D({"DCAOriginMC", "Lines DCA from MC vertex: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.01; DCA (cm); #tracklets", 100u, 0.f, 0.f}, "DCAOrigin");
 
     auto canvasDCApairs = new TCanvas("DCApairs", "DCApairs", 800, 600);
     canvasDCApairs->SetLogy();
@@ -1044,11 +1044,12 @@ void plotPaircuts(TFile *noMcFile, TFile *mcFile)
     canvasCentroids->SetGridx();
     canvasCentroids->SetGridy();
     gPad->SetLogz(1);
-    histCentroidsTransverse->DrawClone("colz");
-    auto legendcanvasCentroids = new TLegend(0.5, 0.13, 0.87, 0.23);
+    histCentroidsTransverse->GetXaxis()->SetNdivisions(512);
+    histCentroidsTransverse->GetYaxis()->SetNdivisions(512);
+    histCentroidsTransverse->GetXaxis()->SetMaxDigits(1);
+    histCentroidsTransverse->DrawClone("surf3 0");
+    auto legendcanvasCentroids = new TLegend(0.55, 0.01, 0.92, 0.11);
     legendcanvasCentroids->SetTextSize(0.022);
-    histCentroidsTransverse->GetXaxis()->SetNdivisions(20);
-    histCentroidsTransverse->GetYaxis()->SetNdivisions(20);
 
     legendcanvasCentroids->SetHeader("Selections: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.002");
     legendcanvasCentroids->AddEntry("centCoord", Form("Entries: %d", (int)histCentroidsTransverse->GetEntries()), "l");
@@ -1056,10 +1057,14 @@ void plotPaircuts(TFile *noMcFile, TFile *mcFile)
     canvasCentroids->SaveAs("/home/mconcas/cernbox/thesis_pictures/centroidsposition.png", "r");
 
     auto canvasCentroidsNoMCz = new TCanvas("centroidsz", "centroids", 800, 800);
+    canvasCentroidsNoMCz->SetGridx();
+    canvasCentroidsNoMCz->SetGridy();
     gPad->SetLogz(1);
-    histCentroidsNoMCz->DrawClone("colz");
-    auto legendcanvasCentroidsNoMCz = new TLegend(0.5, 0.13, 0.87, 0.23);
-    legendcanvasCentroidsNoMCz->SetTextSize(0.022); 
+    histCentroidsNoMCz->GetXaxis()->SetNdivisions(512);
+    histCentroidsNoMCz->GetYaxis()->SetNdivisions(512);
+    histCentroidsNoMCz->DrawClone("surf3 0");
+    auto legendcanvasCentroidsNoMCz = new TLegend(0.55, 0.01, 0.92, 0.11);
+    legendcanvasCentroidsNoMCz->SetTextSize(0.022);
     legendcanvasCentroidsNoMCz->SetHeader("Selections: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.002");
     legendcanvasCentroidsNoMCz->AddEntry("histCentroidsNoMCz", Form("Entries: %d", (int)histCentroidsNoMCz->GetEntries()), "l");
     legendcanvasCentroidsNoMCz->Draw();
@@ -1067,10 +1072,10 @@ void plotPaircuts(TFile *noMcFile, TFile *mcFile)
 
     auto canvasCentroidsUnzoom = new TCanvas("centroidsUnzoom", "centroidsUnzoom", 800, 800);
     gPad->SetLogz(1);
-    histCentroidsTransverseUnzoomed->DrawClone("colz");
+    histCentroidsTransverseUnzoomed->DrawClone("surf3 0");
     ellisse->Draw("same");
-    auto legendcanvasCentroidsUnzoom = new TLegend(0.5, 0.13, 0.87, 0.23);
-    legendcanvasCentroidsUnzoom->SetTextSize(0.022); 
+    auto legendcanvasCentroidsUnzoom = new TLegend(0.55, 0.01, 0.92, 0.11);
+    legendcanvasCentroidsUnzoom->SetTextSize(0.022);
     legendcanvasCentroidsUnzoom->SetHeader("Selections: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.002");
     legendcanvasCentroidsUnzoom->AddEntry("centCoordunzoomed", Form("Entries: %d", (int)histCentroidsTransverseUnzoomed->GetEntries()), "l");
     legendcanvasCentroidsUnzoom->Draw();
@@ -1078,14 +1083,120 @@ void plotPaircuts(TFile *noMcFile, TFile *mcFile)
 
     auto canvasCentroidsNoMc = new TCanvas("centroidsNoMC", "centroidsNoMC", 800, 800);
     gPad->SetLogz(1);
-    histCentroidsNoMC->DrawClone("colz");
+    histCentroidsNoMC->DrawClone("surf3 0");
     ellisse->DrawClone("same");
-    auto legendcanvasCentroidsNoMc = new TLegend(0.5, 0.13, 0.87, 0.23);
-    legendcanvasCentroidsNoMc->SetTextSize(0.022); 
+    auto legendcanvasCentroidsNoMc = new TLegend(0.55, 0.01, 0.92, 0.11);
+    legendcanvasCentroidsNoMc->SetTextSize(0.022);
     legendcanvasCentroidsNoMc->SetHeader("Selections: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.002");
     legendcanvasCentroidsNoMc->AddEntry("histCentroidsNoMC", Form("Entries: %d", (int)histCentroidsNoMC->GetEntries()), "l");
     legendcanvasCentroidsNoMc->Draw();
     canvasCentroidsNoMc->SaveAs("/home/mconcas/cernbox/thesis_pictures/centroidspositionNoMCUnzoomed.png", "r");
+}
+
+void plotPaircutsVTX(TFile *noMcFile, TFile *mcFile)
+{
+    TGaxis::SetMaxDigits(4);
+    gStyle->SetOptStat(0);
+    gStyle->SetOptFit(0);
+    ROOT::EnableImplicitMT();
+    auto noMCTreeLS = ROOT::RDataFrame("linesSummary", noMcFile);
+    auto mcTreeLS = ROOT::RDataFrame("linesSummary", mcFile);
+    auto noMCTreePairInfo = ROOT::RDataFrame("pairInfo", noMcFile);
+    auto mcTreePairInfo = ROOT::RDataFrame("pairInfo", mcFile);
+
+    auto histDCAPairsNoMC = noMCTreePairInfo.Histo1D({"pairDCA", "Pair of lines DCA: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.002; DCA (cm); #pairs", 300u, 0.f, 0.5f}, "DCApair");
+    auto histDCAPairsMC = mcTreePairInfo.Histo1D({"pairDCAMC", "Pair of lines DCA: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.002; DCA (cm); #pairs", 300u, 0.f, 0.4f}, "DCApair");
+    auto histCentroidsTransverse = mcTreePairInfo.Histo2D({"centCoord", "MC validated centroid xy-projection, 150 PbPb events, v=(0,0,0); x (cm); y (cm)", 300u, -0.1f, 0.1f, 300u, -0.1f, 0.1f}, "xCoord", "yCoord");
+    auto histCentroidsTransverseUnzoomed = mcTreePairInfo.Histo2D({"centCoordunzoomed", "MC validated centroid xy-projections, 150 PbPb events, v=(0,0,0); x (cm); y (cm)", 300u, -2.0f, 2.0f, 300u, -2.0f, 2.0f}, "xCoord", "yCoord");
+
+    auto histCentroidsNoMC = noMCTreePairInfo.Histo2D({"histCentroidsNoMC", "Centroids xy-projections, 150 PbPb events, v=(0,0,0); x (cm); y (cm)", 300u, -2.0f, 2.0f, 300u, -2.0f, 2.0f}, "xCoord", "yCoord");
+
+    auto histCentroidsNoMCz = noMCTreePairInfo.Histo2D({"histCentroidsNoMCz", "Centroids xy-projections, 150 PbPb events, v=(0,0,0); x (cm); y (cm)", 300u, -0.1f, 0.1f, 300u, -0.1f, 0.1f}, "xCoord", "yCoord");
+
+    auto histDCAZaxisNoMC = noMCTreeLS.Histo1D({"DCAZ", "Lines DCA from Z axis: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.01; DCA (cm); #tracklets", 300u, 0.f, 0.f}, "DCAZaxis");
+    auto histDCAZaxisMC = mcTreeLS.Histo1D({"DCAZMC", "Lines DCA from Z axis: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.01; DCA (cm); #tracklets", 300u, 0.f, 0.f}, "DCAZaxis");
+    auto histDCAOriginNoMC = noMCTreeLS.Histo1D({"DCAOrigin", "Lines DCA from MC vertex: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.01; DCA (cm); #tracklets", 300u, 0.f, 0.f}, "DCAOrigin");
+    auto histDCAOriginMC = mcTreeLS.Histo1D({"DCAOriginMC", "Lines DCA from MC vertex: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.01; DCA (cm); #tracklets", 300u, 0.f, 0.f}, "DCAOrigin");
+
+    auto canvasDCApairs = new TCanvas("DCApairs", "DCApairs", 800, 600);
+    canvasDCApairs->SetLogy();
+    histDCAPairsMC->SetMinimum(1);
+    auto gaussiana = new TF1("mygaus", "gaus", 0.f, 0.5f);
+    histDCAPairsMC->Fit(gaussiana);
+    histDCAPairsMC->DrawClone();
+
+    // Legend
+    gStyle->SetLegendBorderSize(1);
+    auto legend1 = new TLegend(0.5, 0.68, 0.87, 0.78);
+    auto legend2 = new TLegend(0.5, 0.48, 0.87, 0.68);
+    legend1->SetHeader("150 PbPb events", "C");
+    legend1->AddEntry("pairDCAMC", Form("Entries: %d", (int)histDCAPairsMC->GetEntries()), "l");
+    legend2->SetHeader("Fit parameters", "C");
+    legend2->AddEntry("pairDCAMC", Form("constant: %f#pm%f ", gaussiana->GetParameter(0), gaussiana->GetParError(0)), "");
+    legend2->AddEntry("pairDCAMC", Form("mean: %f#pm%f ", gaussiana->GetParameter(1), gaussiana->GetParError(1)), "");
+    legend2->AddEntry("pairDCAMC", Form("sigma: %f#pm%f ", gaussiana->GetParameter(2), gaussiana->GetParError(2)), "");
+    legend1->Draw();
+    legend2->Draw();
+    canvasDCApairs->SaveAs("/home/mconcas/cernbox/thesis_pictures/dcamontecarlopairsVTX.png", "r");
+
+    auto ellisse = new TEllipse(0.f, 0.f, 1.98f);
+    ellisse->SetLineColor(kRed);
+    ellisse->SetLineWidth(2);
+    ellisse->SetFillColor(kWhite);
+    ellisse->SetFillColorAlpha(kWhite, 0.f);
+    ellisse->SetFillStyle(0);
+
+    auto canvasCentroids = new TCanvas("centroids", "centroids", 800, 800);
+    canvasCentroids->SetGridx();
+    canvasCentroids->SetGridy();
+    gPad->SetLogz(1);
+    histCentroidsTransverse->GetXaxis()->SetNdivisions(512);
+    histCentroidsTransverse->GetYaxis()->SetNdivisions(512);
+    histCentroidsTransverse->GetXaxis()->SetMaxDigits(1);
+    histCentroidsTransverse->DrawClone("colz");
+    auto legendcanvasCentroids = new TLegend(0.5, 0.13, 0.87, 0.23);
+    legendcanvasCentroids->SetTextSize(0.022);
+
+    legendcanvasCentroids->SetHeader("Selections: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.002");
+    legendcanvasCentroids->AddEntry("centCoord", Form("Entries: %d", (int)histCentroidsTransverse->GetEntries()), "l");
+    legendcanvasCentroids->Draw();
+    canvasCentroids->SaveAs("/home/mconcas/cernbox/thesis_pictures/centroidspositionVTX.png", "r");
+
+    auto canvasCentroidsNoMCz = new TCanvas("centroidsz", "centroids", 800, 800);
+    canvasCentroidsNoMCz->SetGridx();
+    canvasCentroidsNoMCz->SetGridy();
+    gPad->SetLogz(1);
+    histCentroidsNoMCz->GetXaxis()->SetNdivisions(512);
+    histCentroidsNoMCz->GetYaxis()->SetNdivisions(512);
+    histCentroidsNoMCz->DrawClone("colz");
+    auto legendcanvasCentroidsNoMCz = new TLegend(0.5, 0.13, 0.87, 0.23);
+    legendcanvasCentroidsNoMCz->SetTextSize(0.022);
+    legendcanvasCentroidsNoMCz->SetHeader("Selections: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.002");
+    legendcanvasCentroidsNoMCz->AddEntry("histCentroidsNoMCz", Form("Entries: %d", (int)histCentroidsNoMCz->GetEntries()), "l");
+    legendcanvasCentroidsNoMCz->Draw();
+    canvasCentroidsNoMCz->SaveAs("/home/mconcas/cernbox/thesis_pictures/centroidspositionNomcZVTX.png", "r");
+
+    auto canvasCentroidsUnzoom = new TCanvas("centroidsUnzoom", "centroidsUnzoom", 800, 800);
+    gPad->SetLogz(1);
+    histCentroidsTransverseUnzoomed->DrawClone("colz");
+    ellisse->Draw("same");
+    auto legendcanvasCentroidsUnzoom = new TLegend(0.5, 0.13, 0.87, 0.23);
+    legendcanvasCentroidsUnzoom->SetTextSize(0.022);
+    legendcanvasCentroidsUnzoom->SetHeader("Selections: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.002");
+    legendcanvasCentroidsUnzoom->AddEntry("centCoordunzoomed", Form("Entries: %d", (int)histCentroidsTransverseUnzoomed->GetEntries()), "l");
+    legendcanvasCentroidsUnzoom->Draw();
+    canvasCentroidsUnzoom->SaveAs("/home/mconcas/cernbox/thesis_pictures/centroidspositionUnzoomedVTX.png", "r");
+
+    auto canvasCentroidsNoMc = new TCanvas("centroidsNoMC", "centroidsNoMC", 800, 800);
+    gPad->SetLogz(1);
+    histCentroidsNoMC->DrawClone("colz");
+    ellisse->DrawClone("same");
+    auto legendcanvasCentroidsNoMc = new TLegend(0.5, 0.13, 0.87, 0.23);
+    legendcanvasCentroidsNoMc->SetTextSize(0.022);
+    legendcanvasCentroidsNoMc->SetHeader("Selections: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.002");
+    legendcanvasCentroidsNoMc->AddEntry("histCentroidsNoMC", Form("Entries: %d", (int)histCentroidsNoMC->GetEntries()), "l");
+    legendcanvasCentroidsNoMc->Draw();
+    canvasCentroidsNoMc->SaveAs("/home/mconcas/cernbox/thesis_pictures/centroidspositionNoMCUnzoomedVTX.png", "r");
 }
 
 int plots(const int inspEvt = -1,
@@ -1102,6 +1213,7 @@ int plots(const int inspEvt = -1,
           const std::string tanLambdaCutVariationSelectionDir = "tanLambdaCutVariationData/150evts",
           const std::string tanlambdawithnarrowphipath = "tanlambdaVariation/150evts",
           const std::string pairCutsDirPath = "paircuts/150evts/",
+          const std::string pairCutsDirPathVTX = "paircutsVTX/150evts/",
           const std::string pairCutsfile = "dbg_ITSVertexerCPU_005_001_noMC.root",
           const std::string pairCutsMCfile = "dbg_ITSVertexerCPU_005_001_MC.root",
 
@@ -1179,6 +1291,8 @@ int plots(const int inspEvt = -1,
 
     TFile *pairFile = TFile::Open((path + pairCutsDirPath + pairCutsfile).data());
     TFile *pairMCFile = TFile::Open((path + pairCutsDirPath + pairCutsMCfile).data());
+    TFile *pairFileVTX = TFile::Open((path + pairCutsDirPathVTX + pairCutsfile).data());
+    TFile *pairMCFileVTX = TFile::Open((path + pairCutsDirPathVTX + pairCutsMCfile).data());
 
     // config
     const int stopAt = (inspEvt == -1) ? rofs->size() : inspEvt + numEvents;
@@ -1194,6 +1308,6 @@ int plots(const int inspEvt = -1,
     // plotZCorrelations(phiDBGFilesTrackleting[0]);
     // plotTanLambdaVariation(&l2tiFile, tanLambdaDBGFilesTrackleting, tanlambdaVariationfiles);
     plotPaircuts(pairFile, pairMCFile);
-
+    // plotPaircutsVTX(pairFileVTX, pairMCFileVTX);
     return 0;
 }

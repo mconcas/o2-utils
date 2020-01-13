@@ -46,7 +46,7 @@
 //   gStyle->SetOptStat(1);
 //   gStyle->SetOptDate(0);
 //   gStyle->SetOptFit(1);
-   gStyle->SetLabelSize(0.04,"xyz"); // size of axis value font
+   gStyle->SetLabelSize(0.03,"xyz"); // size of axis value font
    gStyle->SetTitleSize(0.05,"xyz"); // size of axis title font
    gStyle->SetTitleFont(42,"xyz"); // font option
    gStyle->SetLabelFont(42,"xyz");
@@ -66,7 +66,7 @@
 //   gStyle->SetFrameBorderMode(0);
 //   gStyle->SetPaperSize(20,24); // US letter size
   gStyle->SetLegendBorderSize(0);
-  gStyle->SetLegendFillColor(0);
+//   gStyle->SetLegendFillColor(0);
 
   const int __colors[10] = {TColor::GetColor("#ff3300"), TColor::GetColor("#ec6e0a"), TColor::GetColor("#daaa14"), TColor::GetColor("#c7e51e"), TColor::GetColor("#85dd69"), TColor::GetColor("#42d6b4"), TColor::GetColor("#00ceff"), TColor::GetColor("#009adf"), TColor::GetColor("#0067c0"), TColor::GetColor("#0033a1")};
 
