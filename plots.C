@@ -997,6 +997,7 @@ void plotPaircuts(TFile *noMcFile, TFile *mcFile)
     auto mcTreeLS = ROOT::RDataFrame("linesSummary", mcFile);
     auto noMCTreePairInfo = ROOT::RDataFrame("pairInfo", noMcFile);
     auto mcTreePairInfo = ROOT::RDataFrame("pairInfo", mcFile);
+    auto noMCTreeClusterLines = ROOT::RDataFrame("clusterLinesInfo", noMcFile);
 
     auto histDCAPairsNoMC = noMCTreePairInfo.Histo1D({"pairDCA", "Pair of lines DCA: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.002; DCA (cm); #pairs", 300u, 0.f, 0.5f}, "DCApair");
     auto histDCAPairsMC = mcTreePairInfo.Histo1D({"pairDCAMC", "Pair of lines DCA: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.002; DCA (cm); #pairs", 300u, 0.f, 0.4f}, "DCApair");
@@ -1006,6 +1007,9 @@ void plotPaircuts(TFile *noMcFile, TFile *mcFile)
     auto histCentroidsNoMC = noMCTreePairInfo.Histo2D({"histCentroidsNoMC", "Centroids xy-projections, 150 PbPb events, v=(0,0,0); x (cm); y (cm)", 100u, -2.0f, 2.0f, 100u, -2.0f, 2.0f}, "xCoord", "yCoord");
 
     auto histCentroidsNoMCz = noMCTreePairInfo.Histo2D({"histCentroidsNoMCz", "Centroids xy-projections, 150 PbPb events, v=(0,0,0); x (cm); y (cm)", 100, -0.1f, 0.1f, 100, -0.1f, 0.1f}, "xCoord", "yCoord");
+
+    auto histClusterCentroidsXY = noMCTreeClusterLines.Histo2D({"clusterCentroidsNoMC", "Centroids of intermediate clusters of lines, 150 PbPb events, v=(0,0,0); x (cm); y (cm)", 150u, -2.0f, 2.0f, 150u, -2.0f, 2.0f}, "xCoord", "yCoord");
+    auto histClusterCentroidsZ = noMCTreeClusterLines.Histo1D({"zClusterCentroidsNoMC", "Centroids of intermediate clusters of lines, 150 PbPb events, v=(0,0,0); z (cm); #centroids", 150, -40.f, 40.f}, "zCoord");
 
     auto histDCAZaxisNoMC = noMCTreeLS.Histo1D({"DCAZ", "Lines DCA from Z axis: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.01; DCA (cm); #tracklets", 100u, 0.f, 0.f}, "DCAZaxis");
     auto histDCAZaxisMC = mcTreeLS.Histo1D({"DCAZMC", "Lines DCA from Z axis: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.01; DCA (cm); #tracklets", 100u, 0.f, 0.f}, "DCAZaxis");
@@ -1091,6 +1095,30 @@ void plotPaircuts(TFile *noMcFile, TFile *mcFile)
     legendcanvasCentroidsNoMc->AddEntry("histCentroidsNoMC", Form("Entries: %d", (int)histCentroidsNoMC->GetEntries()), "l");
     legendcanvasCentroidsNoMc->Draw();
     canvasCentroidsNoMc->SaveAs("/home/mconcas/cernbox/thesis_pictures/centroidspositionNoMCUnzoomed.png", "r");
+
+    auto canvasCentroidsClusterLinesNoMC = new TCanvas("CLCentroidsNoMC", "CLCentroidsNoMC", 800, 800);
+    histClusterCentroidsXY->DrawClone("colz");
+    ellisse->DrawClone("same");
+
+    auto legendClusterCentroids = new TLegend(0.45, 0.85, 0.85, 0.95);
+    legendClusterCentroids->SetTextSize(0.022);
+    legendClusterCentroids->SetHeader("Selections: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.002");
+    legendClusterCentroids->AddEntry("clusterCentroidsNoMC", Form("Entries: %d", (int)histClusterCentroidsXY->GetEntries()), "l");
+    legendClusterCentroids->Draw();
+    canvasCentroidsClusterLinesNoMC->SaveAs("/home/mconcas/cernbox/thesis_pictures/centroidsClustersNoMC.png", "r");
+
+    auto canvasCentroidsClusterLinesZNoMC = new TCanvas("CLCentroidsNoMCZ", "CLCentroidsNoMCZ", 800, 800);
+    histClusterCentroidsZ->SetFillColor(kOrangeCT);
+    histClusterCentroidsZ->SetFillStyle(3001);
+    histClusterCentroidsZ->SetLineColor(kPurpleCT);
+    canvasCentroidsClusterLinesZNoMC->SetLogy();
+    histClusterCentroidsZ->DrawClone();
+    auto legendClusterCentroidsZ = new TLegend(0.55, 0.80, 0.95, 0.90);
+    legendClusterCentroidsZ->SetTextSize(0.022);
+    legendClusterCentroidsZ->SetHeader("Selections: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.002");
+    legendClusterCentroidsZ->AddEntry("zClusterCentroidsNoMC", Form("Entries: %d", (int)histClusterCentroidsZ->GetEntries()), "l");
+    legendClusterCentroidsZ->Draw();
+    canvasCentroidsClusterLinesZNoMC->SaveAs("/home/mconcas/cernbox/thesis_pictures/centroidsClustersNoMCZ.png", "r");
 }
 
 void plotPaircutsVTX(TFile *noMcFile, TFile *mcFile)
@@ -1106,12 +1134,12 @@ void plotPaircutsVTX(TFile *noMcFile, TFile *mcFile)
 
     auto histDCAPairsNoMC = noMCTreePairInfo.Histo1D({"pairDCA", "Pair of lines DCA: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.002; DCA (cm); #pairs", 300u, 0.f, 0.5f}, "DCApair");
     auto histDCAPairsMC = mcTreePairInfo.Histo1D({"pairDCAMC", "Pair of lines DCA: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.002; DCA (cm); #pairs", 300u, 0.f, 0.4f}, "DCApair");
-    auto histCentroidsTransverse = mcTreePairInfo.Histo2D({"centCoord", "MC validated centroid xy-projection, 150 PbPb events, v=(0,0,0); x (cm); y (cm)", 300u, -0.1f, 0.1f, 300u, -0.1f, 0.1f}, "xCoord", "yCoord");
-    auto histCentroidsTransverseUnzoomed = mcTreePairInfo.Histo2D({"centCoordunzoomed", "MC validated centroid xy-projections, 150 PbPb events, v=(0,0,0); x (cm); y (cm)", 300u, -2.0f, 2.0f, 300u, -2.0f, 2.0f}, "xCoord", "yCoord");
+    auto histCentroidsTransverse = mcTreePairInfo.Histo2D({"centCoord", "MC validated centroid xy-projection, 150 PbPb events min bias; x (cm); y (cm)", 300u, -0.1f, 0.1f, 300u, -0.1f, 0.1f}, "xCoord", "yCoord");
+    auto histCentroidsTransverseUnzoomed = mcTreePairInfo.Histo2D({"centCoordunzoomed", "MC validated centroid xy-projections, 150 PbPb events min bias; x (cm); y (cm)", 300u, -2.0f, 2.0f, 300u, -2.0f, 2.0f}, "xCoord", "yCoord");
 
-    auto histCentroidsNoMC = noMCTreePairInfo.Histo2D({"histCentroidsNoMC", "Centroids xy-projections, 150 PbPb events, v=(0,0,0); x (cm); y (cm)", 300u, -2.0f, 2.0f, 300u, -2.0f, 2.0f}, "xCoord", "yCoord");
+    auto histCentroidsNoMC = noMCTreePairInfo.Histo2D({"histCentroidsNoMC", "Centroids xy-projections, 150 PbPb events min bias; x (cm); y (cm)", 300u, -2.0f, 2.0f, 300u, -2.0f, 2.0f}, "xCoord", "yCoord");
 
-    auto histCentroidsNoMCz = noMCTreePairInfo.Histo2D({"histCentroidsNoMCz", "Centroids xy-projections, 150 PbPb events, v=(0,0,0); x (cm); y (cm)", 300u, -0.1f, 0.1f, 300u, -0.1f, 0.1f}, "xCoord", "yCoord");
+    auto histCentroidsNoMCz = noMCTreePairInfo.Histo2D({"histCentroidsNoMCz", "Centroids xy-projections, 150 PbPb events min bias; x (cm); y (cm)", 300u, -0.1f, 0.1f, 300u, -0.1f, 0.1f}, "xCoord", "yCoord");
 
     auto histDCAZaxisNoMC = noMCTreeLS.Histo1D({"DCAZ", "Lines DCA from Z axis: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.01; DCA (cm); #tracklets", 300u, 0.f, 0.f}, "DCAZaxis");
     auto histDCAZaxisMC = mcTreeLS.Histo1D({"DCAZMC", "Lines DCA from Z axis: #Delta#phi=0.005 (rad), #Deltatan#lambda=0.01; DCA (cm); #tracklets", 300u, 0.f, 0.f}, "DCAZaxis");
@@ -1216,6 +1244,7 @@ int plots(const int inspEvt = -1,
           const std::string pairCutsDirPathVTX = "paircutsVTX/150evts/",
           const std::string pairCutsfile = "dbg_ITSVertexerCPU_005_001_noMC.root",
           const std::string pairCutsMCfile = "dbg_ITSVertexerCPU_005_001_MC.root",
+          //   const std::string pairCutsMCfile = "dbg_ITSVertexerCPU_001_01_MC.root",
 
           const std::string path = "./")
 {
