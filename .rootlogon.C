@@ -43,7 +43,7 @@
 //   if (aliphysics != "") gROOT->ProcessLine(Form(".I %s", aliphysics.data()));
 // #endif
 
-//   gStyle->SetOptStat(1);
+  gStyle->SetOptStat(1);
 //   gStyle->SetOptDate(0);
 //   gStyle->SetOptFit(1);
    gStyle->SetLabelSize(0.03,"xyz"); // size of axis value font
