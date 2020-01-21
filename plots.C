@@ -206,7 +206,7 @@ void plotClusters(const int startAt,
         }
     }
 
-    auto canvasClustersPhi = new TCanvas("ClustersPhi", "Clusters data phi", 1300, 1000);
+    auto canvasClustersPhi = new TCanvas("ClustersPhi", "Clusters data phi", 1600, 1000);
     histClus0Phi->SetDirectory(0);
     canvasClustersPhi->cd();
     histClus0Phi->GetYaxis()->SetMaxDigits(2);
@@ -305,7 +305,7 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
     // Histos
     TH1F *deltaPhi = new TH1F("deltaPhi", "#Delta#phi for correlated clusters L_{0}-L_{1}; #Delta#phi (rad); N_{entries}", 200, 0.f, 0.05f);
     TH1F *deltaZ = new TH1F("deltaZ", "#DeltaZ for correlated clusters L_{0}-L_{1}; #DeltaZ (cm); N_{entries}", 200, -35.f, 35.f);
-    TH1F *pTdist = new TH1F("pTdistribution", "#pi^{#pm}: #it{p}_{T}; #it{p}_{T} (GeV/#it{c}); N_{entries}", 400, 0.f, 5.f);
+    TH1F *pTdist = new TH1F("pTdistribution", "#it{p}_{T} distribution for charged pions: #pi^{#pm}; #it{p}_{T} (GeV/#it{c}); N_{entries}", 400, 0.f, 5.f);
     TH2F *cluDeltaPhiPt = new TH2F("cluDeltaPhiPt", "Clusters: #it{p}_{T} vs #Delta#phi, 150 events PbPb minBias; #it{p}_{T} (GeV/#it{c}); #Delta#phi (rad)", 400, 0.f, 5.f, 400, 0.f, 0.01f);
     TH2F *cluDeltaZPt = new TH2F("cluDeltaZPt", "Clusters: #DeltaZ vs #it{p}_{T}, 150 events PbPb minBias; #it{p}_{T} (GeV/#it{c}); #DeltaZ (cm)", 400, 0.f, 5.f, 400, -10.f, 10.f);
     TH2F *trkDeltaPhiPt = new TH2F("trkDeltaPhiPt", "|#Delta#phi| vs #it{p}_{T} for correlated primary tracklets; #it{p}_{T} (GeV/#it{c}); |#Delta#phi| (rad)", 1000, 0.f, 5.f, 600, 0.f, 0.1 * TMath::Pi());
@@ -384,8 +384,7 @@ void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
     legenddeltaZ->AddEntry(deltaZ, Form("#LT#it{p}_{T}#GT= %2.2f GeV/#it{c}", deltaZ->GetMean()), "");
     legenddeltaZ->Draw();
 
-    auto canvasPt = new TCanvas("PiPt", "PiPt", 800, 600);
-    // canvasPt->SetLogy();
+    auto canvasPt = new TCanvas("PiPt", "PiPt", 1600, 1000);
     canvasPt->SetGrid();
     canvasPt->cd();
     canvasPt->SetLogy();
@@ -1332,11 +1331,11 @@ int plots(const int inspEvt = -1,
 
     // Hereafter: direct calls to plotting functions
     // plotClusters(startAt, stopAt, rofs, clusters, labels);
-    // plotDBGCPU(&dbgCPUFile, &l2tiFile);
+    plotDBGCPU(&dbgCPUFile, &l2tiFile);
     // plotPhiCutVariation(&l2tiFile, &dbgCPUFile, &dbgcpufileSingle505, phiDBGFilesTrackleting, phiDBGFilesSelection);
     // plotZCorrelations(phiDBGFilesTrackleting[0]);
     // plotTanLambdaVariation(&l2tiFile, tanLambdaDBGFilesTrackleting, tanlambdaVariationfiles);
-    plotPaircuts(pairFile, pairMCFile);
+    // plotPaircuts(pairFile, pairMCFile);
     // plotPaircutsVTX(pairFileVTX, pairMCFileVTX);
     return 0;
 }
