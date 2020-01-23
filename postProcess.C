@@ -41,7 +41,7 @@ const int kBrownCT = TColor::GetColorTransparent(kBrownC, 0.2);
 void postProcess(const std::string fileName = "/data1/ruben/pbpbVtx/dbg_ITSVertexerCPU.root",
                  const std::string fileNameLabels = "/data1/ruben/pbpbVtx/label2Track0.root")
 {
-    gStyle->SetOptStat(0);
+    // gStyle->SetOptStat(0);
     // ROOT::EnableImplicitMT();
     auto vertInfo = ROOT::RDataFrame("verticesInfo", fileName);
     auto histEvtIds = vertInfo.Histo1D({"EventIDs", "Reconstructed vertices in ROFrames; event ID; reconstructed", 151, -1.5, 149.5}, "eventId");
@@ -50,29 +50,32 @@ void postProcess(const std::string fileName = "/data1/ruben/pbpbVtx/dbg_ITSVerte
     histEvtIds->SetLineColor(kBrownC);
     histEvtIds->DrawClone();
     auto lEvtIds = new TLegend(0.70, 0.2, 0.98, 0.33);
-    lEvtIds->SetHeader(Form("%d rec vertices, 545 ROframes", (int)histEvtIds->GetEntries()), "C");
+    lEvtIds->SetHeader(Form("%d reconstructed vertices, 545 ROframes", (int)histEvtIds->GetEntries()), "C");
     lEvtIds->AddEntry("EventIDs", "Reconstructed EvtID", "f");
     lEvtIds->SetBorderSize(1);
     lEvtIds->SetTextSize(0.022);
     lEvtIds->Draw();
-    canvasEvtID->SaveAs("/home/mconcas/cernbox/thesis_pictures/eventsid.png", "r");
+    canvasEvtID->SaveAs("/home/mconcas/cernbox/thesis_pictures/eventsid_hist.png", "r");
 
     auto histPurity = vertInfo.Histo1D({"Purity", "Purity of reconstructed vertices; purity; counts", 150, 0.95f, 1.00002f}, "purity");
     histPurity->SetFillColor(kRedC);
     histPurity->SetLineColor(kRedC);
-    auto canvasPurity = new TCanvas("Purity", "Purity", 800, 600);
+    auto canvasPurity = new TCanvas("Purity", "Purity", 1600, 1000);
     canvasPurity->SetLogy();
+    canvasPurity->SetGridx();
+    canvasPurity->SetGridy();
     histPurity->DrawClone();
     auto lPurity = new TLegend(0.2, 0.7, 0.55, 0.83);
-    lPurity->SetHeader(Form("%d rec vertices, 545 ROframes", (int)histPurity->GetEntries()), "C");
-    lPurity->AddEntry("Purity", "purity = #frac{validated lines}{used lines}", "f");
+    lPurity->SetHeader(Form("%d reconstructed vertices, 545 ROframes", (int)histPurity->GetEntries()), "C");
+    lPurity->AddEntry("Purity", "purity = #frac{validated lines}{used lines}", "");
+    lPurity->AddEntry("Purity", Form("Mean: %.3f", (float)histPurity->GetMean()), "f");
     lPurity->SetBorderSize(1);
     lPurity->SetTextSize(0.022);
     lPurity->Draw();
-    canvasPurity->SaveAs("/home/mconcas/cernbox/thesis_pictures/verticespurity.png", "r");
+    canvasPurity->SaveAs("/home/mconcas/cernbox/thesis_pictures/verticespurity_hist.png", "r");
 
     // residuals
-    gStyle->SetOptStat(1);
+    // gStyle->SetOptStat(1);
     std::unordered_map<int, std::array<float, 3>> umap;
     auto labels2Tracks = ROOT::RDataFrame("Labels2Tracks", fileNameLabels);
     auto funzione = [&umap](std::vector<o2::MCCompLabel> labels, std::vector<o2::MCTrack> t) {
@@ -85,7 +88,7 @@ void postProcess(const std::string fileName = "/data1/ruben/pbpbVtx/dbg_ITSVerte
         }
     };
     auto hResX = new TH1F("resX", "Residuals X; #DeltaX (cm); counts", 150, -0.03f, 0.03f);
-    auto hResY = new TH1F("resY", "Residuals Y; #DeltaY (cm); counts", 150, -0.03f, 0.03f);
+    auto hResY = new TH1F("resY", "Residuals Y; #DeltaY (cm); counts", 150, -0.04f, 0.04f);
     auto hResZ = new TH1F("resZ", "Residuals Z; #DeltaZ (cm); counts", 150, -0.05f, 0.05f);
     auto vResX = std::vector<double>{};
     auto vResY = std::vector<double>{};
@@ -120,7 +123,7 @@ void postProcess(const std::string fileName = "/data1/ruben/pbpbVtx/dbg_ITSVerte
     hResX->Draw();
     auto lResX = new TLegend(0.55, 0.62, 0.92, 0.72);
     lResX->SetHeader(Form("Residuals: %d reconstructed vertices", (int)hResX->GetEntries()), "C");
-    lResX->AddEntry("resX", "residuals", "f");
+    lResX->AddEntry("resX", Form("Mean: %.4f RMS: %.4f", hResX->GetMean(), hResX->GetRMS()), "");
     lResX->SetTextSize(0.022);
     lResX->SetBorderSize(1);
     lResX->Draw();
@@ -133,7 +136,7 @@ void postProcess(const std::string fileName = "/data1/ruben/pbpbVtx/dbg_ITSVerte
     hResY->Draw();
     auto lResY = new TLegend(0.55, 0.62, 0.92, 0.72);
     lResY->SetHeader(Form("Residuals: %d reconstructed vertices", (int)hResY->GetEntries()), "C");
-    lResY->AddEntry("resY", "residuals", "f");
+    lResY->AddEntry("resY", Form("Mean: %.4f RMS: %.4f", hResY->GetMean(), hResY->GetRMS()), "");
     lResY->SetTextSize(0.022);
     lResY->SetBorderSize(1);
     lResY->Draw();
@@ -146,16 +149,16 @@ void postProcess(const std::string fileName = "/data1/ruben/pbpbVtx/dbg_ITSVerte
     hResZ->Draw();
     auto lResZ = new TLegend(0.55, 0.62, 0.92, 0.72);
     lResZ->SetHeader(Form("Residuals: %d reconstructed vertices", (int)hResZ->GetEntries()), "C");
-    lResZ->AddEntry("resZ", "residuals", "f");
+    lResZ->AddEntry("resZ", Form("Mean: %.4f RMS: %.4f", hResZ->GetMean(), hResZ->GetRMS()), "");
     lResZ->SetTextSize(0.022);
     lResZ->SetBorderSize(1);
     lResZ->Draw();
-    canvasX->SaveAs("/home/mconcas/cernbox/thesis_pictures/vertexResX.png", "r");
-    canvasY->SaveAs("/home/mconcas/cernbox/thesis_pictures/vertexResY.png", "r");
-    canvasZ->SaveAs("/home/mconcas/cernbox/thesis_pictures/vertexResZ.png", "r");
+    canvasX->SaveAs("/home/mconcas/cernbox/thesis_pictures/vertexResX_hist.png", "r");
+    canvasY->SaveAs("/home/mconcas/cernbox/thesis_pictures/vertexResY_hist.png", "r");
+    canvasZ->SaveAs("/home/mconcas/cernbox/thesis_pictures/vertexResZ_hist.png", "r");
 
     // Residuals vs nContribs
-    gStyle->SetOptStat(0);
+    // gStyle->SetOptStat(0);
     auto hContVsResx = new TH2F("hContVsResx", "Residuals X vs contributors; contributors; #DeltaX(cm) ", 150, 0, 7000, 150, 0.f, 0.014f);
     hContVsResx->FillN((int)vContribs.size(), vContribs.data(), vResX.data(), nullptr);
     auto hContVsResy = new TH2F("hContVsResy", "Residuals Y vs contributors; contributors; #DeltaY(cm) ", 150, 0, 7000, 150, 0.f, 0.014f);
@@ -201,27 +204,27 @@ void postProcess(const std::string fileName = "/data1/ruben/pbpbVtx/dbg_ITSVerte
     lResZvsCont->SetTextSize(0.022);
     lResZvsCont->SetBorderSize(1);
     lResZvsCont->Draw();
-    canvasResidualsContX->SaveAs("/home/mconcas/cernbox/thesis_pictures/residualsVsContributorsX.png", "r");
-    canvasResidualsContY->SaveAs("/home/mconcas/cernbox/thesis_pictures/residualsVsContributorsY.png", "r");
-    canvasResidualsContZ->SaveAs("/home/mconcas/cernbox/thesis_pictures/residualsVsContributorsZ.png", "r");
+    canvasResidualsContX->SaveAs("/home/mconcas/cernbox/thesis_pictures/residualsVsContributorsX_hist.png", "r");
+    canvasResidualsContY->SaveAs("/home/mconcas/cernbox/thesis_pictures/residualsVsContributorsY_hist.png", "r");
+    canvasResidualsContZ->SaveAs("/home/mconcas/cernbox/thesis_pictures/residualsVsContributorsZ_hist.png", "r");
 
     // Purity vs nContribs
     auto hPurityVsConts = new TH2F("hPurityVsConts", "Vertices purity vs contributors; contributors; purity", 150, 0, 7000, 150, 0.95f, 1.002f);
     hPurityVsConts->FillN((int)vContribs.size(), vContribs.data(), vPurity.data(), nullptr);
-    auto canvasPurityVsContribs = new TCanvas("purVsConts", "purVsConts", 800, 600);
+    auto canvasPurityVsContribs = new TCanvas("purVsConts", "purVsConts", 1600, 1000);
     canvasPurityVsContribs->SetGridx();
     canvasPurityVsContribs->SetGridy();
     canvasPurityVsContribs->SetLogx();
     hPurityVsConts->SetMarkerColor(kGreenC);
     hPurityVsConts->SetMarkerStyle(23);
     hPurityVsConts->Draw();
-    auto lPurityvsCont = new TLegend(0.60, 0.58, 0.86, 0.72);
+    auto lPurityvsCont = new TLegend(0.60, 0.38, 0.86, 0.52);
     lPurityvsCont->SetHeader(Form("Purity: %d reconstructed vertices", (int)hPurityVsConts->GetEntries()), "C");
     lPurityvsCont->AddEntry("hPurityVsConts", "purity = #frac{validated lines}{used lines}", "p");
     lPurityvsCont->SetTextSize(0.022);
     lPurityvsCont->SetBorderSize(1);
     lPurityvsCont->Draw();
-    canvasPurityVsContribs->SaveAs("/home/mconcas/cernbox/thesis_pictures/purityVsContributors.png", "r");
+    canvasPurityVsContribs->SaveAs("/home/mconcas/cernbox/thesis_pictures/purityVsContributors_hist.png", "r");
 }
 
 #endif
