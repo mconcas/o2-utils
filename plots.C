@@ -283,6 +283,243 @@ void plotClusters(const int startAt,
     canvasRphi->SaveAs("/home/mconcas/cernbox/thesis_pictures/clustersRPhi.png", "r");
 }
 
+void plotDBGGPU(TFile *dbgGPUFile, TFile *dbgHIPFile, TFile *dbgCPUFile)
+{
+    gStyle->SetOptStat(0);
+    TTreeReader readerCPU01("combinatorics01", dbgCPUFile);
+    TTreeReader readerCPU12("combinatorics12", dbgCPUFile);
+    TTreeReader readerCUDA01("combinatorics01", dbgGPUFile);
+    TTreeReader readerCUDA12("combinatorics12", dbgGPUFile);
+    TTreeReader readerHIP01("combinatorics01", dbgHIPFile);
+    TTreeReader readerHIP12("combinatorics12", dbgHIPFile);
+    TTreeReader readerCPUsel("selectedTracklets", dbgCPUFile);
+    TTreeReader readerCUDAsel("selectedTracklets", dbgGPUFile);
+    TTreeReader readerHIPsel("selectedTracklets", dbgHIPFile);
+    TTreeReaderValue<float> tlCPU01(readerCPU01, "tanLambda");
+    TTreeReaderValue<float> tlCPU12(readerCPU12, "tanLambda");
+    TTreeReaderValue<float> tlGPU01(readerCUDA01, "tanLambda");
+    TTreeReaderValue<float> tlGPU12(readerCUDA12, "tanLambda");
+    TTreeReaderValue<float> tlHIP01(readerHIP01, "tanLambda");
+    TTreeReaderValue<float> tlHIP12(readerHIP12, "tanLambda");
+    TTreeReaderValue<float> selCPU(readerCPUsel, "deltaPhi");
+    TTreeReaderValue<float> selCUDA(readerCUDAsel, "deltaPhi");
+    TTreeReaderValue<float> selHIP(readerHIPsel, "deltaPhi");
+
+    TH1F *tanLambda01CPU = new TH1F("tanLambda01CPU", "CPU: tan#lambda of tracklets Layer 0-1; tan#lambda; N_{entries}", 400, -70.f, 70.f);
+    TH1F *tanLambda12CPU = new TH1F("tanLambda12CPU", "CPU: tan#lambda of tracklets Layer 0-1; tan#lambda; N_{entries}", 400, -70.f, 70.f);
+    TH1F *tanLambda01CUDA = new TH1F("tanLambda01cuda", "CUDA: tan#lambda of tracklets Layer 0-1; tan#lambda; N_{entries}", 400, -70.f, 70.f);
+    TH1F *tanLambda12CUDA = new TH1F("tanLambda12cuda", "CUDA: tan#lambda of tracklets Layer 0-1; tan#lambda; N_{entries}", 400, -70.f, 70.f);
+    TH1F *tanLambda01HIP = new TH1F("tanLambda01hip", "HIP: tan#lambda of tracklets Layer 0-1; tan#lambda; N_{entries}", 400, -70.f, 70.f);
+    TH1F *tanLambda12HIP = new TH1F("tanLambda12hip", "HIP: tan#lambda of tracklets Layer 0-1; tan#lambda; N_{entries}", 400, -70.f, 70.f);
+    TH1F *deltaPhiCPU = new TH1F("deltaPhiCPU", "CPU: #Delta#phi of selected lines; #Delta#phi (rad); N_{entries}", 400, -0.005f, 0.005f);
+    TH1F *deltaPhiCUDA = new TH1F("deltaPhiCUDA", "CUDA: #Delta#phi of selected lines; #Delta#phi (rad); N_{entries}", 400, -0.005f, 0.005f);
+    TH1F *deltaPhiHIP = new TH1F("deltaPhiHIP", "HIP: #Delta#phi of selected lines; #Delta#phi (rad); N_{entries}", 400, -0.005f, 0.005f);
+
+    while (readerCPU01.Next())
+    {
+        tanLambda01CPU->Fill(*tlCPU01);
+    }
+
+    while (readerCPU12.Next())
+    {
+        tanLambda12CPU->Fill(*tlCPU12);
+    }
+
+    while (readerCUDA01.Next())
+    {
+        tanLambda01CUDA->Fill(*tlGPU01);
+    }
+
+    while (readerCUDA12.Next())
+    {
+        tanLambda12CUDA->Fill(*tlGPU12);
+    }
+
+    while (readerHIP01.Next())
+    {
+        tanLambda01HIP->Fill(*tlHIP01);
+    }
+
+    while (readerHIP12.Next())
+    {
+        tanLambda12HIP->Fill(*tlHIP12);
+    }
+
+    while (readerCUDAsel.Next())
+    {
+        deltaPhiCUDA->Fill(*selCUDA);
+    }
+
+    while (readerHIPsel.Next())
+    {
+        deltaPhiHIP->Fill(*selHIP);
+    }
+
+    while (readerCPUsel.Next())
+    {
+        deltaPhiCPU->Fill(*selCPU);
+    }
+
+    // Draw section
+
+    auto canvasTanLambdaCUDA = new TCanvas("TanLambdaCUDA", "TanLambdaCUDA", 800, 800);
+    canvasTanLambdaCUDA->SetGrid();
+    canvasTanLambdaCUDA->cd();
+    // canvasTanLambdaCUDA->SetLogy();
+    tanLambda01CUDA->SetDirectory(0);
+    tanLambda01CUDA->SetLineColor(kBlack);
+    tanLambda01CUDA->SetFillColor(kGreenCT);
+    tanLambda01CUDA->Draw();
+
+    tanLambda12CUDA->SetDirectory(0);
+    tanLambda12CUDA->SetLineColor(kBlack);
+    tanLambda12CUDA->SetFillColor(kYellowCT);
+    tanLambda12CUDA->Draw("same");
+
+    // Legend
+    gStyle->SetLegendBorderSize(1);
+    auto legendTanLambdaCUDA01 = new TLegend(0.65, 0.68, 0.97, 0.88);
+    // legendTanLambdaCUDA01->SetTextSize(45);
+    legendTanLambdaCUDA01->SetHeader("150 events PbPb MB");
+    legendTanLambdaCUDA01->AddEntry(tanLambda01CUDA, Form("Entries: %d ", (int)tanLambda01CUDA->GetEntries()), "LF");
+    legendTanLambdaCUDA01->AddEntry(tanLambda01CUDA, Form("#LTtan#lambda#GT=%2.4f", tanLambda01CUDA->GetMean()), "");
+    legendTanLambdaCUDA01->AddEntry(tanLambda01CUDA, Form("RMS=%2.4f", tanLambda01CUDA->GetRMS()), "");
+    legendTanLambdaCUDA01->Draw();
+
+    auto legendTanLambdaCUDA12 = new TLegend(0.65, 0.48, 0.97, 0.68);
+    legendTanLambdaCUDA12->SetHeader("150 events PbPb MB");
+    legendTanLambdaCUDA12->AddEntry(tanLambda12CUDA, Form("Entries: %d ", (int)tanLambda12CUDA->GetEntries()), "LF");
+    legendTanLambdaCUDA12->AddEntry(tanLambda12CUDA, Form("#LTtan#lambda#GT=%2.4f", tanLambda12CUDA->GetMean()), "");
+    legendTanLambdaCUDA12->AddEntry(tanLambda12CUDA, Form("RMS=%2.4f", tanLambda12CUDA->GetRMS()), "");
+    legendTanLambdaCUDA12->Draw();
+
+    auto canvasTanLambdaHIP = new TCanvas("TanLambdaHIP", "TanLambdaHIP", 800, 800);
+    canvasTanLambdaHIP->SetGrid();
+    canvasTanLambdaHIP->cd();
+    // canvasTanLambdaHIP->SetLogy();
+    tanLambda01HIP->SetDirectory(0);
+    tanLambda01HIP->SetLineColor(kBlack);
+    tanLambda01HIP->SetFillColor(kRedCT);
+    tanLambda01HIP->Draw();
+
+    tanLambda12HIP->SetDirectory(0);
+    tanLambda12HIP->SetLineColor(kBlack);
+    tanLambda12HIP->SetFillColor(kOrangeCT);
+    tanLambda12HIP->Draw("same");
+
+    // Legend
+    gStyle->SetLegendBorderSize(1);
+    auto legendTanLambdaHIP01 = new TLegend(0.65, 0.68, 0.97, 0.88);
+    legendTanLambdaHIP01->SetHeader("150 events PbPb MB");
+    legendTanLambdaHIP01->AddEntry(tanLambda01HIP, Form("Entries: %d ", (int)tanLambda01HIP->GetEntries()), "LF");
+    legendTanLambdaHIP01->AddEntry(tanLambda01HIP, Form("#LTtan#lambda#GT=%2.4f", tanLambda01HIP->GetMean()), "");
+    legendTanLambdaHIP01->AddEntry(tanLambda01HIP, Form("RMS=%2.4f", tanLambda01HIP->GetRMS()), "");
+    legendTanLambdaHIP01->Draw();
+
+    auto legendTanLambdaHIP12 = new TLegend(0.65, 0.48, 0.97, 0.68);
+    legendTanLambdaHIP12->SetHeader("150 events PbPb MB");
+    legendTanLambdaHIP12->AddEntry(tanLambda12HIP, Form("Entries: %d ", (int)tanLambda12HIP->GetEntries()), "LF");
+    legendTanLambdaHIP12->AddEntry(tanLambda12HIP, Form("#LTtan#lambda#GT=%2.4f", tanLambda12HIP->GetMean()), "");
+    legendTanLambdaHIP12->AddEntry(tanLambda12HIP, Form("RMS=%2.4f", tanLambda12HIP->GetRMS()), "");
+    legendTanLambdaHIP12->Draw();
+
+    canvasTanLambdaCUDA->SaveAs("/home/mconcas/cernbox/thesis_pictures/gpuTanLambda.png", "r");
+    canvasTanLambdaHIP->SaveAs("/home/mconcas/cernbox/thesis_pictures/hipTanLambda.png", "r");
+    // ==========================================================<><><><><><><><><><><><><><><><><><><><><><><><>====================================================================
+
+    auto canvasSelDeltaPhiCUDA = new TCanvas("SelDeltaPhiCUDA", "SelDeltaPhiCUDA", 800, 800);
+    canvasSelDeltaPhiCUDA->SetGrid();
+    canvasSelDeltaPhiCUDA->cd();
+    // canvasSelDeltaPhiCUDA->SetLogy();
+    deltaPhiCUDA->SetDirectory(0);
+    deltaPhiCUDA->SetLineColor(kBlack);
+    deltaPhiCUDA->SetFillColor(kGreenCT);
+    deltaPhiCUDA->Draw();
+
+    // Legend
+    gStyle->SetLegendBorderSize(1);
+    auto legendSelDeltaPhi01CUDA = new TLegend(0.65, 0.68, 0.97, 0.88);
+    legendSelDeltaPhi01CUDA->SetHeader("150 events PbPb MB");
+    legendSelDeltaPhi01CUDA->AddEntry(deltaPhiCUDA, Form("Entries: %d ", (int)deltaPhiCUDA->GetEntries()), "LF");
+    legendSelDeltaPhi01CUDA->AddEntry(deltaPhiCUDA, Form("#LT#Delta#phi#GT=%2.4f", deltaPhiCUDA->GetMean()), "");
+    legendSelDeltaPhi01CUDA->AddEntry(deltaPhiCUDA, Form("RMS=%2.4f", deltaPhiCUDA->GetRMS()), "");
+    legendSelDeltaPhi01CUDA->Draw();
+
+    auto canvasSelDeltaPhiHIP = new TCanvas("SelDeltaPhiHIP", "SelDeltaPhiHIP", 800, 800);
+    canvasSelDeltaPhiHIP->SetGrid();
+    canvasSelDeltaPhiHIP->cd();
+    // canvasSelDeltaPhiHIP->SetLogy();
+    deltaPhiHIP->SetDirectory(0);
+    deltaPhiHIP->SetLineColor(kBlack);
+    deltaPhiHIP->SetFillColor(kRedCT);
+    deltaPhiHIP->Draw();
+
+    // Legend
+    gStyle->SetLegendBorderSize(1);
+    auto legendSelDeltaPhi01HIP = new TLegend(0.65, 0.68, 0.97, 0.88);
+    legendSelDeltaPhi01HIP->SetHeader("150 events PbPb MB");
+    legendSelDeltaPhi01HIP->AddEntry(deltaPhiHIP, Form("Entries: %d ", (int)deltaPhiHIP->GetEntries()), "LF");
+    legendSelDeltaPhi01HIP->AddEntry(deltaPhiHIP, Form("#LT#Delta#phi#GT=%2.4f", deltaPhiHIP->GetMean()), "");
+    legendSelDeltaPhi01HIP->AddEntry(deltaPhiHIP, Form("RMS=%2.4f", deltaPhiHIP->GetRMS()), "");
+    legendSelDeltaPhi01HIP->Draw();
+
+    canvasSelDeltaPhiCUDA->SaveAs("/home/mconcas/cernbox/thesis_pictures/gpuSelDeltaPhi.png", "r");
+    canvasSelDeltaPhiHIP->SaveAs("/home/mconcas/cernbox/thesis_pictures/hipSelDeltaPhi.png", "r");
+
+    // ##########################################################################
+
+    auto canvasSelDeltaPhiCPU = new TCanvas("SelDeltaPhiCPU", "SelDeltaPhiCPU", 800, 800);
+    canvasSelDeltaPhiCPU->SetGrid();
+    canvasSelDeltaPhiCPU->cd();
+    // canvasSelDeltaPhiCPU->SetLogy();
+    deltaPhiCPU->SetDirectory(0);
+    deltaPhiCPU->SetLineColor(kBlack);
+    deltaPhiCPU->SetFillColor(kBlueCT);
+    deltaPhiCPU->Draw();
+
+    // Legend
+    gStyle->SetLegendBorderSize(1);
+    auto legendSelDeltaPhi01CPU = new TLegend(0.65, 0.68, 0.97, 0.88);
+    legendSelDeltaPhi01CPU->SetHeader("150 events PbPb MB");
+    legendSelDeltaPhi01CPU->AddEntry(deltaPhiCPU, Form("Entries: %d ", (int)deltaPhiCPU->GetEntries()), "LF");
+    legendSelDeltaPhi01CPU->AddEntry(deltaPhiCPU, Form("#LT#Delta#phi#GT=%2.4f", deltaPhiCPU->GetMean()), "");
+    legendSelDeltaPhi01CPU->AddEntry(deltaPhiCPU, Form("RMS=%2.4f", deltaPhiCPU->GetRMS()), "");
+    legendSelDeltaPhi01CPU->Draw();
+
+    auto canvasTanLambdaCPU = new TCanvas("TanLambdaCPU", "TanLambdaCPU", 800, 800);
+    canvasTanLambdaCPU->SetGrid();
+    canvasTanLambdaCPU->cd();
+    //     // canvasTanLambdaCPU->SetLogy();
+    tanLambda01CPU->SetDirectory(0);
+    tanLambda01CPU->SetLineColor(kBlack);
+    tanLambda01CPU->SetFillColor(kBlueCT);
+    tanLambda01CPU->Draw();
+
+    tanLambda12CPU->SetDirectory(0);
+    tanLambda12CPU->SetLineColor(kBlack);
+    tanLambda12CPU->SetFillColor(kPurpleCT);
+    tanLambda12CPU->Draw("same");
+
+    // Legend
+    gStyle->SetLegendBorderSize(1);
+    auto legendTanLambdaCPU01 = new TLegend(0.65, 0.68, 0.97, 0.88);
+    legendTanLambdaCPU01->SetHeader("150 events PbPb MB");
+    legendTanLambdaCPU01->AddEntry(tanLambda01CPU, Form("Entries: %d ", (int)tanLambda01CPU->GetEntries()), "LF");
+    legendTanLambdaCPU01->AddEntry(tanLambda01CPU, Form("#LTtan#lambda#GT=%2.4f", tanLambda01CPU->GetMean()), "");
+    legendTanLambdaCPU01->AddEntry(tanLambda01CPU, Form("RMS=%2.4f", tanLambda01CPU->GetRMS()), "");
+    legendTanLambdaCPU01->Draw();
+
+    auto legendTanLambdaCPU12 = new TLegend(0.65, 0.48, 0.97, 0.68);
+    legendTanLambdaCPU12->SetHeader("150 events PbPb MB");
+    legendTanLambdaCPU12->AddEntry(tanLambda12CPU, Form("Entries: %d ", (int)tanLambda12CPU->GetEntries()), "LF");
+    legendTanLambdaCPU12->AddEntry(tanLambda12CPU, Form("#LTtan#lambda#GT=%2.4f", tanLambda12CPU->GetMean()), "");
+    legendTanLambdaCPU12->AddEntry(tanLambda12CPU, Form("RMS=%2.4f", tanLambda12CPU->GetRMS()), "");
+    legendTanLambdaCPU12->Draw();
+
+    canvasSelDeltaPhiCPU->SaveAs("/home/mconcas/cernbox/thesis_pictures/cpuSelDeltaPhi.png", "r");
+    canvasTanLambdaCPU->SaveAs("/home/mconcas/cernbox/thesis_pictures/cpuTanLambda.png", "r");
+}
+
 void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
 {
     gStyle->SetOptStat(0);
@@ -1233,6 +1470,9 @@ int plots(const int inspEvt = -1,
           const std::string simfilename = "o2sim.root",
           const std::string paramfilename = "O2geometry.root",
           const std::string dbgcpufilename = "dbg_ITSVertexerCPU_150_PureMC.root",
+          const std::string dbggpufilename = "dbg_ITSVertexerGPU150.root",
+          const std::string dbghipfilename = "dbg_ITSVertexerHIP150.root",
+          const std::string dbgcpu_filename = "dbg_ITSVertexerCPU150.root",
           const std::string dbgcpufilenameSingle505 = "dbg_ITSVertexerCPU_PureMC_single_505.root",
           const std::string labl2trackinfofilename = "label2Track0.root",
           const std::string phiCutVariationSelectionDir = "phiCutVariationLargeTanLambda/150evts",
@@ -1241,8 +1481,12 @@ int plots(const int inspEvt = -1,
           const std::string tanlambdawithnarrowphipath = "tanlambdaVariation/150evts",
           const std::string pairCutsDirPath = "paircuts/150evts/",
           const std::string pairCutsDirPathVTX = "paircutsVTX/150evts/",
+          const std::string gpuDBGPath = "GPUdbg/",
           const std::string pairCutsfile = "dbg_ITSVertexerCPU_005_001_noMC.root",
           const std::string pairCutsMCfile = "dbg_ITSVertexerCPU_005_001_MC.root",
+          const std::string resultsSerialfile = "vertexer_serial_data.root",
+          const std::string resultsCUDAfile = "vertexer_cuda_data.root",
+          const std::string resultsHIPfile = "vertexer_hip_data.root",
           //   const std::string pairCutsMCfile = "dbg_ITSVertexerCPU_001_01_MC.root",
 
           const std::string path = "./")
@@ -1283,6 +1527,24 @@ int plots(const int inspEvt = -1,
 
     // dbg CPU
     TFile dbgCPUFile((path + dbgcpufilename).data());
+
+    // dbg GPU
+    TFile dbgGPUFile((gpuDBGPath + dbggpufilename).data());
+
+    // dbg HIP
+    TFile dbgHIPFile((gpuDBGPath + dbghipfilename).data());
+
+    // dbg CPU for comparison with GPU
+    TFile dbgCPU_File((gpuDBGPath + dbgcpu_filename).data());
+
+    // res CPU
+    TFile resultSerial((gpuDBGPath + resultsSerialfile).data());
+
+    // res CUDA
+    TFile resultCUDA((gpuDBGPath + resultsCUDAfile).data());
+    
+    // res HIP
+    TFile resultHIP((gpuDBGPath + resultsHIPfile).data());
 
     // dbg CPU single event
     TFile dbgcpufileSingle505((path + dbgcpufilenameSingle505).data());
@@ -1331,7 +1593,9 @@ int plots(const int inspEvt = -1,
 
     // Hereafter: direct calls to plotting functions
     // plotClusters(startAt, stopAt, rofs, clusters, labels);
-    plotDBGCPU(&dbgCPUFile, &l2tiFile);
+    // plotDBGCPU(&dbgCPUFile, &l2tiFile);
+    // plotDBGGPU(&dbgGPUFile, &dbgHIPFile, &dbgCPU_File);
+    plotResidualsGPU();
     // plotPhiCutVariation(&l2tiFile, &dbgCPUFile, &dbgcpufileSingle505, phiDBGFilesTrackleting, phiDBGFilesSelection);
     // plotZCorrelations(phiDBGFilesTrackleting[0]);
     // plotTanLambdaVariation(&l2tiFile, tanLambdaDBGFilesTrackleting, tanlambdaVariationfiles);
