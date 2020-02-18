@@ -25,6 +25,7 @@
 
 #include <unordered_map>
 #include <list>
+#include <algorithm>
 
 #include "DataFormatsITSMFT/Cluster.h"
 #include "DataFormatsITSMFT/ROFRecord.h"
@@ -32,6 +33,7 @@
 #include "SimulationDataFormat/MCEventHeader.h"
 #include "SimulationDataFormat/MCTruthContainer.h"
 #include "SimulationDataFormat/MCTrack.h"
+#include "ReconstructionDataFormats/Vertex.h"
 
 #include "ITSBase/GeometryTGeo.h"
 #include "ITStracking/IOUtils.h"
@@ -74,6 +76,8 @@ void arrangeClusters(ROframe *event, std::array<std::vector<Cluster>, constants:
 }
 } // namespace its
 } // namespace o2
+
+using Vertex = o2::dataformats::Vertex<o2::dataformats::TimeStamp<int>>;
 
 const int kBlueC = TColor::GetColor("#1f78b4");
 const int kBlueCT = TColor::GetColorTransparent(kBlueC, 0.9);
@@ -518,6 +522,205 @@ void plotDBGGPU(TFile *dbgGPUFile, TFile *dbgHIPFile, TFile *dbgCPUFile)
 
     canvasSelDeltaPhiCPU->SaveAs("/home/mconcas/cernbox/thesis_pictures/cpuSelDeltaPhi.png", "r");
     canvasTanLambdaCPU->SaveAs("/home/mconcas/cernbox/thesis_pictures/cpuTanLambda.png", "r");
+}
+
+void plotResidualsGPU(TFile *resSerial, TFile *resCUDA, TFile *resHIP)
+{
+    TTreeReader readerSerial("o2sim", resSerial);
+    TTreeReader readerCUDA("o2sim", resCUDA);
+    TTreeReader readerHIP("o2sim", resHIP);
+    TTreeReaderValue<std::vector<Vertex>> vSerial(readerSerial, "ITSVertices");
+    TTreeReaderValue<std::vector<Vertex>> vCUDA(readerCUDA, "ITSVertices");
+    TTreeReaderValue<std::vector<Vertex>> vHIP(readerHIP, "ITSVertices");
+    std::map<int, std::vector<Vertex>> serialVerticesMap;
+    std::map<int, std::vector<Vertex>> cudaVerticesMap;
+    std::map<int, std::vector<Vertex>> hipVerticesMap;
+    int counterS{0}, counterC{0}, counterH{0};
+
+    auto resXSC = new TH1F("residualsXSC", "Residuals X Serial vs CUDA;#Deltax (cm);N_{entries}", 100, -0.001, 0.001);
+    resXSC->SetFillColor(kRedCT);
+    resXSC->GetXaxis()->SetMaxDigits(3);
+    auto resXSH = new TH1F("residualsXSH", "Residuals X Serial vs HIP;#Deltax (cm);N_{entries}", 100, -0.001, 0.001);
+    resXSH->SetFillColor(kRedCT);
+    resXSH->GetXaxis()->SetMaxDigits(3);
+    auto resXCH = new TH1F("residualsXCH", "Residuals X CUDA vs HIP;#Deltax (cm);N_{entries}", 100, -0.001, 0.001);
+    resXCH->SetFillColor(kRedCT);
+    resXCH->GetXaxis()->SetMaxDigits(3);
+
+    auto resYSC = new TH1F("residualsYSC", "Residuals Y Serial vs CUDA;#Deltay (cm);N_{entries}", 100, -0.001, 0.001);
+    resYSC->GetXaxis()->SetMaxDigits(3);
+    resYSC->SetFillColor(kGreenCT);
+    auto resYSH = new TH1F("residualsYSH", "Residuals Y Serial vs HIP;#Deltay (cm);N_{entries}", 100, -0.001, 0.001);
+    resYSH->GetXaxis()->SetMaxDigits(3);
+    resYSH->SetFillColor(kGreenCT);
+    auto resYCH = new TH1F("residualsYCH", "Residuals Y CUDA vs HIP;#Deltay (cm);N_{entries}", 100, -0.001, 0.001);
+    resYCH->GetXaxis()->SetMaxDigits(3);
+    resYCH->SetFillColor(kGreenCT);
+
+    auto resZSC = new TH1F("residualsZSC", "Residuals Z Serial vs CUDA;#Deltaz (cm);N_{entries}", 100, -0.001, 0.001);
+    resZSC->GetXaxis()->SetMaxDigits(3);
+    resZSC->SetFillColor(kBlueCT);
+    auto resZSH = new TH1F("residualsZSH", "Residuals Z Serial vs HIP;#Deltaz (cm);N_{entries}", 100, -0.001, 0.001);
+    resZSH->GetXaxis()->SetMaxDigits(3);
+    resZSH->SetFillColor(kBlueCT);
+    auto resZCH = new TH1F("residualsZCH", "Residuals Z CUDA vs HIP;#Deltaz (cm);N_{entries}", 100, -0.001, 0.001);
+    resZCH->GetXaxis()->SetMaxDigits(3);
+    resZCH->SetFillColor(kBlueCT);
+
+    while (readerSerial.Next())
+    {
+        if (!(*vSerial).empty())
+        {
+            serialVerticesMap.insert(std::pair<int, std::vector<Vertex>>(counterS, *vSerial));
+            counterS++;
+        }
+    }
+
+    while (readerCUDA.Next())
+    {
+        if (!(*vCUDA).empty())
+        {
+            cudaVerticesMap.insert(std::pair<int, std::vector<Vertex>>(counterC, *vCUDA));
+            counterC++;
+        }
+    }
+
+    while (readerHIP.Next())
+    {
+        if (!(*vHIP).empty())
+        {
+            hipVerticesMap.insert(std::pair<int, std::vector<Vertex>>(counterH, *vHIP));
+            counterH++;
+        }
+    }
+
+    for (auto i{0}; i < counterS; ++i)
+    {
+        auto itS = serialVerticesMap.find(i);
+        auto itC = cudaVerticesMap.find(i);
+        auto itH = hipVerticesMap.find(i);
+
+        std::sort(itS->second.begin(), itS->second.end(), [](auto &a, auto &b) { return a.getZ() < b.getZ(); });
+        std::sort(itC->second.begin(), itC->second.end(), [](auto &a, auto &b) { return a.getZ() < b.getZ(); });
+        std::sort(itH->second.begin(), itH->second.end(), [](auto &a, auto &b) { return a.getZ() < b.getZ(); });
+
+        for (int i{0}; i < (int)itS->second.size(); ++i)
+        {
+            resZSC->Fill(itS->second[i].getZ() - itC->second[i].getZ());
+            resZSH->Fill(itS->second[i].getZ() - itH->second[i].getZ());
+            resZCH->Fill(itC->second[i].getZ() - itH->second[i].getZ());
+        }
+
+        resXSC->Fill(itS->second[0].getX() - itC->second[0].getX());
+        resXSH->Fill(itS->second[0].getX() - itH->second[0].getX());
+        resXCH->Fill(itC->second[0].getX() - itH->second[0].getX());
+
+        resYSC->Fill(itS->second[0].getY() - itC->second[0].getY());
+        resYSH->Fill(itS->second[0].getY() - itH->second[0].getY());
+        resYCH->Fill(itC->second[0].getY() - itH->second[0].getY());
+    }
+
+    gStyle->SetOptStat(0);
+    auto canvasResXSC = new TCanvas("resXSC", "resXSC", 800, 800);
+    canvasResXSC->SetLogy();
+    resXSC->Draw();
+    gStyle->SetLegendBorderSize(1);
+    auto legendresXSC = new TLegend(0.6, 0.68, 0.9, 0.88);
+    legendresXSC->SetHeader("150 events PbPb MB");
+    legendresXSC->AddEntry(resXSC, Form("Entries: %d ", (int)resXSC->GetEntries()), "LF");
+    legendresXSC->AddEntry(resXSC, Form("#LT#Deltax#GT=%2.5f rad", resXSC->GetMean()), "");
+    legendresXSC->AddEntry(resXSC, Form("RMS=%2.5f", resXSC->GetRMS()), "");
+    legendresXSC->Draw();
+
+    auto canvasResXSH = new TCanvas("resXSH", "resXSH", 800, 800);
+    canvasResXSH->SetLogy();
+    resXSH->Draw();
+    auto legendresXSH = new TLegend(0.6, 0.68, 0.9, 0.88);
+    legendresXSH->SetHeader("150 events PbPb MB");
+    legendresXSH->AddEntry(resXSH, Form("Entries: %d ", (int)resXSH->GetEntries()), "LF");
+    legendresXSH->AddEntry(resXSH, Form("#LT#Deltax#GT=%2.5f rad", resXSH->GetMean()), "");
+    legendresXSH->AddEntry(resXSH, Form("RMS=%2.5f", resXSH->GetRMS()), "");
+    legendresXSH->Draw();
+
+    auto canvasResXCH = new TCanvas("resXCH", "resXCH", 800, 800);
+    canvasResXCH->SetLogy();
+    resXCH->Draw();
+    auto legendresXCH = new TLegend(0.6, 0.68, 0.9, 0.88);
+    legendresXCH->SetHeader("150 events PbPb MB");
+    legendresXCH->AddEntry(resXCH, Form("Entries: %d ", (int)resXCH->GetEntries()), "LF");
+    legendresXCH->AddEntry(resXCH, Form("#LT#Deltax#GT=%2.5f rad", resXCH->GetMean()), "");
+    legendresXCH->AddEntry(resXCH, Form("RMS=%2.5f", resXCH->GetRMS()), "");
+    legendresXCH->Draw();
+
+    auto canvasResYSC = new TCanvas("resYSC", "resYSC", 800, 800);
+    canvasResYSC->SetLogy();
+    resYSC->Draw();
+    auto legendresYSC = new TLegend(0.6, 0.68, 0.9, 0.88);
+    legendresYSC->SetHeader("150 events PbPb MB");
+    legendresYSC->AddEntry(resYSC, Form("Entries: %d ", (int)resYSC->GetEntries()), "LF");
+    legendresYSC->AddEntry(resYSC, Form("#LT#Deltay#GT=%2.5f rad", resYSC->GetMean()), "");
+    legendresYSC->AddEntry(resYSC, Form("RMS=%2.5f", resYSC->GetRMS()), "");
+    legendresYSC->Draw();
+
+    auto canvasResYSH = new TCanvas("resYSH", "resYSH", 800, 800);
+    canvasResYSH->SetLogy();
+    resYSH->Draw();
+    auto legendresYSH = new TLegend(0.6, 0.68, 0.9, 0.88);
+    legendresYSH->SetHeader("150 events PbPb MB");
+    legendresYSH->AddEntry(resYSH, Form("Entries: %d ", (int)resYSH->GetEntries()), "LF");
+    legendresYSH->AddEntry(resYSH, Form("#LT#Deltay#GT=%2.5f rad", resYSH->GetMean()), "");
+    legendresYSH->AddEntry(resYSH, Form("RMS=%2.5f", resYSH->GetRMS()), "");
+    legendresYSH->Draw();
+
+    auto canvasResYCH = new TCanvas("resYCH", "resYCH", 800, 800);
+    canvasResYCH->SetLogy();
+    resYCH->Draw();
+    auto legendresYCH = new TLegend(0.6, 0.68, 0.9, 0.88);
+    legendresYCH->SetHeader("150 events PbPb MB");
+    legendresYCH->AddEntry(resYCH, Form("Entries: %d ", (int)resYCH->GetEntries()), "LF");
+    legendresYCH->AddEntry(resYCH, Form("#LT#Deltay#GT=%2.5f rad", resYCH->GetMean()), "");
+    legendresYCH->AddEntry(resYCH, Form("RMS=%2.5f", resYCH->GetRMS()), "");
+    legendresYCH->Draw();
+
+    auto canvasResZSC = new TCanvas("resZSC", "resZSC", 800, 800);
+    canvasResZSC->SetLogy();
+    resZSC->Draw();
+    auto legendresZSC = new TLegend(0.6, 0.68, 0.9, 0.88);
+    legendresZSC->SetHeader("150 events PbPb MB");
+    legendresZSC->AddEntry(resZSC, Form("Entries: %d ", (int)resZSC->GetEntries()), "LF");
+    legendresZSC->AddEntry(resZSC, Form("#LT#Deltaz#GT=%2.5f rad", resZSC->GetMean()), "");
+    legendresZSC->AddEntry(resZSC, Form("RMS=%2.5f", resZSC->GetRMS()), "");
+    legendresZSC->Draw();
+
+    auto canvasResZSH = new TCanvas("resZSH", "resZSH", 800, 800);
+    canvasResZSH->SetLogy();
+    resZSH->Draw();
+    auto legendresZSH = new TLegend(0.6, 0.68, 0.9, 0.88);
+    legendresZSH->SetHeader("150 events PbPb MB");
+    legendresZSH->AddEntry(resZSH, Form("Entries: %d ", (int)resZSH->GetEntries()), "LF");
+    legendresZSH->AddEntry(resZSH, Form("#LT#Deltaz#GT=%2.5f rad", resZSH->GetMean()), "");
+    legendresZSH->AddEntry(resZSH, Form("RMS=%2.5f", resZSH->GetRMS()), "");
+    legendresZSH->Draw();
+
+    auto canvasResZCH = new TCanvas("resZCH", "resZCH", 800, 800);
+    canvasResZCH->SetLogy();
+    resZCH->Draw();
+    auto legendresZCH = new TLegend(0.6, 0.68, 0.9, 0.88);
+    legendresZCH->SetHeader("150 events PbPb MB");
+    legendresZCH->AddEntry(resZCH, Form("Entries: %d ", (int)resZCH->GetEntries()), "LF");
+    legendresZCH->AddEntry(resZCH, Form("#LT#Deltaz#GT=%2.5f rad", resZCH->GetMean()), "");
+    legendresZCH->AddEntry(resZCH, Form("RMS=%2.5f", resZCH->GetRMS()), "");
+    legendresZCH->Draw();
+    
+    canvasResXSC->SaveAs("/home/mconcas/cernbox/thesis_pictures/ResXSC.png", "r");
+    canvasResXSH->SaveAs("/home/mconcas/cernbox/thesis_pictures/ResXSH.png", "r");
+    canvasResXCH->SaveAs("/home/mconcas/cernbox/thesis_pictures/ResXCH.png", "r");
+    canvasResYSC->SaveAs("/home/mconcas/cernbox/thesis_pictures/ResYSC.png", "r");
+    canvasResYSH->SaveAs("/home/mconcas/cernbox/thesis_pictures/ResYSH.png", "r");
+    canvasResYCH->SaveAs("/home/mconcas/cernbox/thesis_pictures/ResYCH.png", "r");
+    canvasResZSC->SaveAs("/home/mconcas/cernbox/thesis_pictures/ResZSC.png", "r");
+    canvasResZSH->SaveAs("/home/mconcas/cernbox/thesis_pictures/ResZSH.png", "r");
+    canvasResZCH->SaveAs("/home/mconcas/cernbox/thesis_pictures/ResZCH.png", "r");
 }
 
 void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
@@ -1487,8 +1690,6 @@ int plots(const int inspEvt = -1,
           const std::string resultsSerialfile = "vertexer_serial_data.root",
           const std::string resultsCUDAfile = "vertexer_cuda_data.root",
           const std::string resultsHIPfile = "vertexer_hip_data.root",
-          //   const std::string pairCutsMCfile = "dbg_ITSVertexerCPU_001_01_MC.root",
-
           const std::string path = "./")
 {
     // file load and stuff
@@ -1542,7 +1743,7 @@ int plots(const int inspEvt = -1,
 
     // res CUDA
     TFile resultCUDA((gpuDBGPath + resultsCUDAfile).data());
-    
+
     // res HIP
     TFile resultHIP((gpuDBGPath + resultsHIPfile).data());
 
@@ -1595,7 +1796,7 @@ int plots(const int inspEvt = -1,
     // plotClusters(startAt, stopAt, rofs, clusters, labels);
     // plotDBGCPU(&dbgCPUFile, &l2tiFile);
     // plotDBGGPU(&dbgGPUFile, &dbgHIPFile, &dbgCPU_File);
-    plotResidualsGPU();
+    plotResidualsGPU(&resultSerial, &resultCUDA, &resultHIP);
     // plotPhiCutVariation(&l2tiFile, &dbgCPUFile, &dbgcpufileSingle505, phiDBGFilesTrackleting, phiDBGFilesSelection);
     // plotZCorrelations(phiDBGFilesTrackleting[0]);
     // plotTanLambdaVariation(&l2tiFile, tanLambdaDBGFilesTrackleting, tanlambdaVariationfiles);
