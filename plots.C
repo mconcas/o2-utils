@@ -309,12 +309,12 @@ void plotDBGGPU(TFile *dbgGPUFile, TFile *dbgHIPFile, TFile *dbgCPUFile)
     TTreeReaderValue<float> selCUDA(readerCUDAsel, "deltaPhi");
     TTreeReaderValue<float> selHIP(readerHIPsel, "deltaPhi");
 
-    TH1F *tanLambda01CPU = new TH1F("tanLambda01CPU", "CPU: tan#lambda of tracklets Layer 0-1; tan#lambda; N_{entries}", 400, -70.f, 70.f);
-    TH1F *tanLambda12CPU = new TH1F("tanLambda12CPU", "CPU: tan#lambda of tracklets Layer 0-1; tan#lambda; N_{entries}", 400, -70.f, 70.f);
-    TH1F *tanLambda01CUDA = new TH1F("tanLambda01cuda", "CUDA: tan#lambda of tracklets Layer 0-1; tan#lambda; N_{entries}", 400, -70.f, 70.f);
-    TH1F *tanLambda12CUDA = new TH1F("tanLambda12cuda", "CUDA: tan#lambda of tracklets Layer 0-1; tan#lambda; N_{entries}", 400, -70.f, 70.f);
-    TH1F *tanLambda01HIP = new TH1F("tanLambda01hip", "HIP: tan#lambda of tracklets Layer 0-1; tan#lambda; N_{entries}", 400, -70.f, 70.f);
-    TH1F *tanLambda12HIP = new TH1F("tanLambda12hip", "HIP: tan#lambda of tracklets Layer 0-1; tan#lambda; N_{entries}", 400, -70.f, 70.f);
+    TH1F *tanLambda01CPU = new TH1F("tanLambda01CPU", "CPU: tan#lambda of tracklets; tan#lambda; N_{entries}", 400, -70.f, 70.f);
+    TH1F *tanLambda12CPU = new TH1F("tanLambda12CPU", "CPU: tan#lambda of tracklets; tan#lambda; N_{entries}", 400, -70.f, 70.f);
+    TH1F *tanLambda01CUDA = new TH1F("tanLambda01cuda", "CUDA: tan#lambda of tracklets; tan#lambda; N_{entries}", 400, -70.f, 70.f);
+    TH1F *tanLambda12CUDA = new TH1F("tanLambda12cuda", "CUDA: tan#lambda of tracklets; tan#lambda; N_{entries}", 400, -70.f, 70.f);
+    TH1F *tanLambda01HIP = new TH1F("tanLambda01hip", "HIP: tan#lambda of tracklets; tan#lambda; N_{entries}", 400, -70.f, 70.f);
+    TH1F *tanLambda12HIP = new TH1F("tanLambda12hip", "HIP: tan#lambda of tracklets; tan#lambda; N_{entries}", 400, -70.f, 70.f);
     TH1F *deltaPhiCPU = new TH1F("deltaPhiCPU", "CPU: #Delta#phi of selected lines; #Delta#phi (rad); N_{entries}", 400, -0.005f, 0.005f);
     TH1F *deltaPhiCUDA = new TH1F("deltaPhiCUDA", "CUDA: #Delta#phi of selected lines; #Delta#phi (rad); N_{entries}", 400, -0.005f, 0.005f);
     TH1F *deltaPhiHIP = new TH1F("deltaPhiHIP", "HIP: #Delta#phi of selected lines; #Delta#phi (rad); N_{entries}", 400, -0.005f, 0.005f);
@@ -384,14 +384,14 @@ void plotDBGGPU(TFile *dbgGPUFile, TFile *dbgHIPFile, TFile *dbgCPUFile)
     gStyle->SetLegendBorderSize(1);
     auto legendTanLambdaCUDA01 = new TLegend(0.65, 0.68, 0.97, 0.88);
     // legendTanLambdaCUDA01->SetTextSize(45);
-    legendTanLambdaCUDA01->SetHeader("150 events PbPb MB");
+    legendTanLambdaCUDA01->SetHeader("Layers 0-1");
     legendTanLambdaCUDA01->AddEntry(tanLambda01CUDA, Form("Entries: %d ", (int)tanLambda01CUDA->GetEntries()), "LF");
     legendTanLambdaCUDA01->AddEntry(tanLambda01CUDA, Form("#LTtan#lambda#GT=%2.4f", tanLambda01CUDA->GetMean()), "");
     legendTanLambdaCUDA01->AddEntry(tanLambda01CUDA, Form("RMS=%2.4f", tanLambda01CUDA->GetRMS()), "");
     legendTanLambdaCUDA01->Draw();
 
     auto legendTanLambdaCUDA12 = new TLegend(0.65, 0.48, 0.97, 0.68);
-    legendTanLambdaCUDA12->SetHeader("150 events PbPb MB");
+    legendTanLambdaCUDA12->SetHeader("Layers 1-2");
     legendTanLambdaCUDA12->AddEntry(tanLambda12CUDA, Form("Entries: %d ", (int)tanLambda12CUDA->GetEntries()), "LF");
     legendTanLambdaCUDA12->AddEntry(tanLambda12CUDA, Form("#LTtan#lambda#GT=%2.4f", tanLambda12CUDA->GetMean()), "");
     legendTanLambdaCUDA12->AddEntry(tanLambda12CUDA, Form("RMS=%2.4f", tanLambda12CUDA->GetRMS()), "");
@@ -414,14 +414,14 @@ void plotDBGGPU(TFile *dbgGPUFile, TFile *dbgHIPFile, TFile *dbgCPUFile)
     // Legend
     gStyle->SetLegendBorderSize(1);
     auto legendTanLambdaHIP01 = new TLegend(0.65, 0.68, 0.97, 0.88);
-    legendTanLambdaHIP01->SetHeader("150 events PbPb MB");
+    legendTanLambdaHIP01->SetHeader("Layers 0-1");
     legendTanLambdaHIP01->AddEntry(tanLambda01HIP, Form("Entries: %d ", (int)tanLambda01HIP->GetEntries()), "LF");
     legendTanLambdaHIP01->AddEntry(tanLambda01HIP, Form("#LTtan#lambda#GT=%2.4f", tanLambda01HIP->GetMean()), "");
     legendTanLambdaHIP01->AddEntry(tanLambda01HIP, Form("RMS=%2.4f", tanLambda01HIP->GetRMS()), "");
     legendTanLambdaHIP01->Draw();
 
     auto legendTanLambdaHIP12 = new TLegend(0.65, 0.48, 0.97, 0.68);
-    legendTanLambdaHIP12->SetHeader("150 events PbPb MB");
+    legendTanLambdaHIP12->SetHeader("Layers 1-2");
     legendTanLambdaHIP12->AddEntry(tanLambda12HIP, Form("Entries: %d ", (int)tanLambda12HIP->GetEntries()), "LF");
     legendTanLambdaHIP12->AddEntry(tanLambda12HIP, Form("#LTtan#lambda#GT=%2.4f", tanLambda12HIP->GetMean()), "");
     legendTanLambdaHIP12->AddEntry(tanLambda12HIP, Form("RMS=%2.4f", tanLambda12HIP->GetRMS()), "");
@@ -430,12 +430,12 @@ void plotDBGGPU(TFile *dbgGPUFile, TFile *dbgHIPFile, TFile *dbgCPUFile)
     canvasTanLambdaCUDA->SaveAs("/home/mconcas/cernbox/thesis_pictures/gpuTanLambda.png", "r");
     canvasTanLambdaHIP->SaveAs("/home/mconcas/cernbox/thesis_pictures/hipTanLambda.png", "r");
     // ==========================================================<><><><><><><><><><><><><><><><><><><><><><><><>====================================================================
-
     auto canvasSelDeltaPhiCUDA = new TCanvas("SelDeltaPhiCUDA", "SelDeltaPhiCUDA", 800, 800);
     canvasSelDeltaPhiCUDA->SetGrid();
     canvasSelDeltaPhiCUDA->cd();
     // canvasSelDeltaPhiCUDA->SetLogy();
     deltaPhiCUDA->SetDirectory(0);
+    deltaPhiCUDA->GetXaxis()->SetMaxDigits(3);
     deltaPhiCUDA->SetLineColor(kBlack);
     deltaPhiCUDA->SetFillColor(kGreenCT);
     deltaPhiCUDA->Draw();
@@ -443,10 +443,10 @@ void plotDBGGPU(TFile *dbgGPUFile, TFile *dbgHIPFile, TFile *dbgCPUFile)
     // Legend
     gStyle->SetLegendBorderSize(1);
     auto legendSelDeltaPhi01CUDA = new TLegend(0.65, 0.68, 0.97, 0.88);
-    legendSelDeltaPhi01CUDA->SetHeader("150 events PbPb MB");
+    legendSelDeltaPhi01CUDA->SetHeader("Layers 0-1");
     legendSelDeltaPhi01CUDA->AddEntry(deltaPhiCUDA, Form("Entries: %d ", (int)deltaPhiCUDA->GetEntries()), "LF");
-    legendSelDeltaPhi01CUDA->AddEntry(deltaPhiCUDA, Form("#LT#Delta#phi#GT=%2.4f", deltaPhiCUDA->GetMean()), "");
-    legendSelDeltaPhi01CUDA->AddEntry(deltaPhiCUDA, Form("RMS=%2.4f", deltaPhiCUDA->GetRMS()), "");
+    legendSelDeltaPhi01CUDA->AddEntry(deltaPhiCUDA, Form("#LT#Delta#phi#GT=%2.4f (rad)", deltaPhiCUDA->GetMean()), "");
+    legendSelDeltaPhi01CUDA->AddEntry(deltaPhiCUDA, Form("RMS=%2.4f (rad)", deltaPhiCUDA->GetRMS()), "");
     legendSelDeltaPhi01CUDA->Draw();
 
     auto canvasSelDeltaPhiHIP = new TCanvas("SelDeltaPhiHIP", "SelDeltaPhiHIP", 800, 800);
@@ -454,6 +454,7 @@ void plotDBGGPU(TFile *dbgGPUFile, TFile *dbgHIPFile, TFile *dbgCPUFile)
     canvasSelDeltaPhiHIP->cd();
     // canvasSelDeltaPhiHIP->SetLogy();
     deltaPhiHIP->SetDirectory(0);
+    deltaPhiHIP->GetXaxis()->SetMaxDigits(3);
     deltaPhiHIP->SetLineColor(kBlack);
     deltaPhiHIP->SetFillColor(kRedCT);
     deltaPhiHIP->Draw();
@@ -461,10 +462,10 @@ void plotDBGGPU(TFile *dbgGPUFile, TFile *dbgHIPFile, TFile *dbgCPUFile)
     // Legend
     gStyle->SetLegendBorderSize(1);
     auto legendSelDeltaPhi01HIP = new TLegend(0.65, 0.68, 0.97, 0.88);
-    legendSelDeltaPhi01HIP->SetHeader("150 events PbPb MB");
+    legendSelDeltaPhi01HIP->SetHeader("Layers 0-1");
     legendSelDeltaPhi01HIP->AddEntry(deltaPhiHIP, Form("Entries: %d ", (int)deltaPhiHIP->GetEntries()), "LF");
-    legendSelDeltaPhi01HIP->AddEntry(deltaPhiHIP, Form("#LT#Delta#phi#GT=%2.4f", deltaPhiHIP->GetMean()), "");
-    legendSelDeltaPhi01HIP->AddEntry(deltaPhiHIP, Form("RMS=%2.4f", deltaPhiHIP->GetRMS()), "");
+    legendSelDeltaPhi01HIP->AddEntry(deltaPhiHIP, Form("#LT#Delta#phi#GT=%2.4f (rad)", deltaPhiHIP->GetMean()), "");
+    legendSelDeltaPhi01HIP->AddEntry(deltaPhiHIP, Form("RMS=%2.4f (rad)", deltaPhiHIP->GetRMS()), "");
     legendSelDeltaPhi01HIP->Draw();
 
     canvasSelDeltaPhiCUDA->SaveAs("/home/mconcas/cernbox/thesis_pictures/gpuSelDeltaPhi.png", "r");
@@ -477,6 +478,7 @@ void plotDBGGPU(TFile *dbgGPUFile, TFile *dbgHIPFile, TFile *dbgCPUFile)
     canvasSelDeltaPhiCPU->cd();
     // canvasSelDeltaPhiCPU->SetLogy();
     deltaPhiCPU->SetDirectory(0);
+    deltaPhiCPU->GetXaxis()->SetMaxDigits(3);
     deltaPhiCPU->SetLineColor(kBlack);
     deltaPhiCPU->SetFillColor(kBlueCT);
     deltaPhiCPU->Draw();
@@ -484,10 +486,10 @@ void plotDBGGPU(TFile *dbgGPUFile, TFile *dbgHIPFile, TFile *dbgCPUFile)
     // Legend
     gStyle->SetLegendBorderSize(1);
     auto legendSelDeltaPhi01CPU = new TLegend(0.65, 0.68, 0.97, 0.88);
-    legendSelDeltaPhi01CPU->SetHeader("150 events PbPb MB");
+    legendSelDeltaPhi01CPU->SetHeader("Layers 0-1");
     legendSelDeltaPhi01CPU->AddEntry(deltaPhiCPU, Form("Entries: %d ", (int)deltaPhiCPU->GetEntries()), "LF");
-    legendSelDeltaPhi01CPU->AddEntry(deltaPhiCPU, Form("#LT#Delta#phi#GT=%2.4f", deltaPhiCPU->GetMean()), "");
-    legendSelDeltaPhi01CPU->AddEntry(deltaPhiCPU, Form("RMS=%2.4f", deltaPhiCPU->GetRMS()), "");
+    legendSelDeltaPhi01CPU->AddEntry(deltaPhiCPU, Form("#LT#Delta#phi#GT=%2.4f (rad)", deltaPhiCPU->GetMean()), "");
+    legendSelDeltaPhi01CPU->AddEntry(deltaPhiCPU, Form("RMS=%2.4f (rad)", deltaPhiCPU->GetRMS()), "");
     legendSelDeltaPhi01CPU->Draw();
 
     auto canvasTanLambdaCPU = new TCanvas("TanLambdaCPU", "TanLambdaCPU", 800, 800);
@@ -507,14 +509,14 @@ void plotDBGGPU(TFile *dbgGPUFile, TFile *dbgHIPFile, TFile *dbgCPUFile)
     // Legend
     gStyle->SetLegendBorderSize(1);
     auto legendTanLambdaCPU01 = new TLegend(0.65, 0.68, 0.97, 0.88);
-    legendTanLambdaCPU01->SetHeader("150 events PbPb MB");
+    legendTanLambdaCPU01->SetHeader("Layers 0-1");
     legendTanLambdaCPU01->AddEntry(tanLambda01CPU, Form("Entries: %d ", (int)tanLambda01CPU->GetEntries()), "LF");
     legendTanLambdaCPU01->AddEntry(tanLambda01CPU, Form("#LTtan#lambda#GT=%2.4f", tanLambda01CPU->GetMean()), "");
     legendTanLambdaCPU01->AddEntry(tanLambda01CPU, Form("RMS=%2.4f", tanLambda01CPU->GetRMS()), "");
     legendTanLambdaCPU01->Draw();
 
     auto legendTanLambdaCPU12 = new TLegend(0.65, 0.48, 0.97, 0.68);
-    legendTanLambdaCPU12->SetHeader("150 events PbPb MB");
+    legendTanLambdaCPU12->SetHeader("Layers 1-2");
     legendTanLambdaCPU12->AddEntry(tanLambda12CPU, Form("Entries: %d ", (int)tanLambda12CPU->GetEntries()), "LF");
     legendTanLambdaCPU12->AddEntry(tanLambda12CPU, Form("#LTtan#lambda#GT=%2.4f", tanLambda12CPU->GetMean()), "");
     legendTanLambdaCPU12->AddEntry(tanLambda12CPU, Form("RMS=%2.4f", tanLambda12CPU->GetRMS()), "");
@@ -537,35 +539,42 @@ void plotResidualsGPU(TFile *resSerial, TFile *resCUDA, TFile *resHIP)
     std::map<int, std::vector<Vertex>> hipVerticesMap;
     int counterS{0}, counterC{0}, counterH{0};
 
-    auto resXSC = new TH1F("residualsXSC", "Residuals X Serial vs CUDA;#Deltax (cm);N_{entries}", 100, -0.001, 0.001);
+    auto resXSC = new TH1F("residualsXSC", "Residuals X Serial vs CUDA;#Deltax (#mum);N_{entries}", 100, -10.f, 10.f);
     resXSC->SetFillColor(kRedCT);
     resXSC->GetXaxis()->SetMaxDigits(3);
-    auto resXSH = new TH1F("residualsXSH", "Residuals X Serial vs HIP;#Deltax (cm);N_{entries}", 100, -0.001, 0.001);
+    auto resXSH = new TH1F("residualsXSH", "Residuals X Serial vs HIP;#Deltax (#mum);N_{entries}", 100, -10.f, 10.f);
     resXSH->SetFillColor(kRedCT);
     resXSH->GetXaxis()->SetMaxDigits(3);
-    auto resXCH = new TH1F("residualsXCH", "Residuals X CUDA vs HIP;#Deltax (cm);N_{entries}", 100, -0.001, 0.001);
+    auto resXCH = new TH1F("residualsXCH", "Residuals X CUDA vs HIP;#Deltax (#mum);N_{entries}", 100, -10.f, 10.f);
     resXCH->SetFillColor(kRedCT);
     resXCH->GetXaxis()->SetMaxDigits(3);
 
-    auto resYSC = new TH1F("residualsYSC", "Residuals Y Serial vs CUDA;#Deltay (cm);N_{entries}", 100, -0.001, 0.001);
+    auto resYSC = new TH1F("residualsYSC", "Residuals Y Serial vs CUDA;#Deltay (#mum);N_{entries}", 100, -10.f, 10.f);
     resYSC->GetXaxis()->SetMaxDigits(3);
     resYSC->SetFillColor(kGreenCT);
-    auto resYSH = new TH1F("residualsYSH", "Residuals Y Serial vs HIP;#Deltay (cm);N_{entries}", 100, -0.001, 0.001);
+    auto resYSH = new TH1F("residualsYSH", "Residuals Y Serial vs HIP;#Deltay (#mum);N_{entries}", 100, -10.f, 10.f);
     resYSH->GetXaxis()->SetMaxDigits(3);
     resYSH->SetFillColor(kGreenCT);
-    auto resYCH = new TH1F("residualsYCH", "Residuals Y CUDA vs HIP;#Deltay (cm);N_{entries}", 100, -0.001, 0.001);
+    auto resYCH = new TH1F("residualsYCH", "Residuals Y CUDA vs HIP;#Deltay (#mum);N_{entries}", 100, -10.f, 10.f);
     resYCH->GetXaxis()->SetMaxDigits(3);
     resYCH->SetFillColor(kGreenCT);
 
-    auto resZSC = new TH1F("residualsZSC", "Residuals Z Serial vs CUDA;#Deltaz (cm);N_{entries}", 100, -0.001, 0.001);
+    auto resZSC = new TH1F("residualsZSC", "Residuals Z Serial vs CUDA;#Deltaz (#mum);N_{entries}", 100, -10.f, 10.f);
     resZSC->GetXaxis()->SetMaxDigits(3);
     resZSC->SetFillColor(kBlueCT);
-    auto resZSH = new TH1F("residualsZSH", "Residuals Z Serial vs HIP;#Deltaz (cm);N_{entries}", 100, -0.001, 0.001);
+    auto resZSH = new TH1F("residualsZSH", "Residuals Z Serial vs HIP;#Deltaz (#mum);N_{entries}", 100, -10.f, 10.f);
     resZSH->GetXaxis()->SetMaxDigits(3);
     resZSH->SetFillColor(kBlueCT);
-    auto resZCH = new TH1F("residualsZCH", "Residuals Z CUDA vs HIP;#Deltaz (cm);N_{entries}", 100, -0.001, 0.001);
+    auto resZCH = new TH1F("residualsZCH", "Residuals Z CUDA vs HIP;#Deltaz (#mum);N_{entries}", 100, -10.f, 10.f);
     resZCH->GetXaxis()->SetMaxDigits(3);
     resZCH->SetFillColor(kBlueCT);
+
+    TH1F *contributorsSerialCUDA = new TH1F("contributorsSerialCUDA", "Serial vs CUDA: contributors to vertex;#frac{serial - cuda}{serial};N_{entries}", 100, -0.05f, 0.05f);
+    contributorsSerialCUDA->SetFillColor(kBlueCT);
+    TH1F *contributorsSerialHIP = new TH1F("contributorsSerialHIP", "Serial vs HIP: contributors to vertex;#frac{serial - hip}{serial};N_{entries}", 100, -0.05f, 0.05f);
+    contributorsSerialHIP->SetFillColor(kBlueCT);
+    TH1F *contributorsCUDAHIP = new TH1F("contributorsCUDAHIP", "CUDA vs HIP: contributors to vertex;#frac{cuda - hip}{cuda};N_{entries}", 100, -0.05f, 0.05f);
+    contributorsCUDAHIP->SetFillColor(kBlueCT);
 
     while (readerSerial.Next())
     {
@@ -606,18 +615,22 @@ void plotResidualsGPU(TFile *resSerial, TFile *resCUDA, TFile *resHIP)
 
         for (int i{0}; i < (int)itS->second.size(); ++i)
         {
-            resZSC->Fill(itS->second[i].getZ() - itC->second[i].getZ());
-            resZSH->Fill(itS->second[i].getZ() - itH->second[i].getZ());
-            resZCH->Fill(itC->second[i].getZ() - itH->second[i].getZ());
+            resZSC->Fill(10000 * (itS->second[i].getZ() - itC->second[i].getZ()));
+            resZSH->Fill(10000 * (itS->second[i].getZ() - itH->second[i].getZ()));
+            resZCH->Fill(10000 * (itC->second[i].getZ() - itH->second[i].getZ()));
+
+            contributorsSerialCUDA->Fill((itS->second[i].getNContributors() - itC->second[i].getNContributors()) / (float)itS->second[i].getNContributors());
+            contributorsSerialHIP->Fill((itS->second[i].getNContributors() - itH->second[i].getNContributors()) / (float)itS->second[i].getNContributors());
+            contributorsCUDAHIP->Fill((itC->second[i].getNContributors() - itH->second[i].getNContributors()) / (float)itC->second[i].getNContributors());
         }
 
-        resXSC->Fill(itS->second[0].getX() - itC->second[0].getX());
-        resXSH->Fill(itS->second[0].getX() - itH->second[0].getX());
-        resXCH->Fill(itC->second[0].getX() - itH->second[0].getX());
+        resXSC->Fill(10000 * (itS->second[0].getX() - itC->second[0].getX()));
+        resXSH->Fill(10000 * (itS->second[0].getX() - itH->second[0].getX()));
+        resXCH->Fill(10000 * (itC->second[0].getX() - itH->second[0].getX()));
 
-        resYSC->Fill(itS->second[0].getY() - itC->second[0].getY());
-        resYSH->Fill(itS->second[0].getY() - itH->second[0].getY());
-        resYCH->Fill(itC->second[0].getY() - itH->second[0].getY());
+        resYSC->Fill(10000 * (itS->second[0].getY() - itC->second[0].getY()));
+        resYSH->Fill(10000 * (itS->second[0].getY() - itH->second[0].getY()));
+        resYCH->Fill(10000 * (itC->second[0].getY() - itH->second[0].getY()));
     }
 
     gStyle->SetOptStat(0);
@@ -625,93 +638,123 @@ void plotResidualsGPU(TFile *resSerial, TFile *resCUDA, TFile *resHIP)
     canvasResXSC->SetLogy();
     resXSC->Draw();
     gStyle->SetLegendBorderSize(1);
-    auto legendresXSC = new TLegend(0.6, 0.68, 0.9, 0.88);
+    auto legendresXSC = new TLegend(0.6, 0.65, 0.87, 0.88);
     legendresXSC->SetHeader("150 events PbPb MB");
     legendresXSC->AddEntry(resXSC, Form("Entries: %d ", (int)resXSC->GetEntries()), "LF");
-    legendresXSC->AddEntry(resXSC, Form("#LT#Deltax#GT=%2.5f rad", resXSC->GetMean()), "");
-    legendresXSC->AddEntry(resXSC, Form("RMS=%2.5f", resXSC->GetRMS()), "");
+    legendresXSC->AddEntry(resXSC, Form("#LT#Deltax#GT=%2.5f #mum", resXSC->GetMean()), "");
+    legendresXSC->AddEntry(resXSC, Form("RMS=%2.5f #mum", resXSC->GetRMS()), "");
     legendresXSC->Draw();
 
     auto canvasResXSH = new TCanvas("resXSH", "resXSH", 800, 800);
     canvasResXSH->SetLogy();
     resXSH->Draw();
-    auto legendresXSH = new TLegend(0.6, 0.68, 0.9, 0.88);
+    auto legendresXSH = new TLegend(0.6, 0.65, 0.87, 0.88);
     legendresXSH->SetHeader("150 events PbPb MB");
     legendresXSH->AddEntry(resXSH, Form("Entries: %d ", (int)resXSH->GetEntries()), "LF");
-    legendresXSH->AddEntry(resXSH, Form("#LT#Deltax#GT=%2.5f rad", resXSH->GetMean()), "");
-    legendresXSH->AddEntry(resXSH, Form("RMS=%2.5f", resXSH->GetRMS()), "");
+    legendresXSH->AddEntry(resXSH, Form("#LT#Deltax#GT=%2.5f #mum", resXSH->GetMean()), "");
+    legendresXSH->AddEntry(resXSH, Form("RMS=%2.5f #mum", resXSH->GetRMS()), "");
     legendresXSH->Draw();
 
     auto canvasResXCH = new TCanvas("resXCH", "resXCH", 800, 800);
     canvasResXCH->SetLogy();
     resXCH->Draw();
-    auto legendresXCH = new TLegend(0.6, 0.68, 0.9, 0.88);
+    auto legendresXCH = new TLegend(0.6, 0.65, 0.87, 0.88);
     legendresXCH->SetHeader("150 events PbPb MB");
     legendresXCH->AddEntry(resXCH, Form("Entries: %d ", (int)resXCH->GetEntries()), "LF");
-    legendresXCH->AddEntry(resXCH, Form("#LT#Deltax#GT=%2.5f rad", resXCH->GetMean()), "");
-    legendresXCH->AddEntry(resXCH, Form("RMS=%2.5f", resXCH->GetRMS()), "");
+    legendresXCH->AddEntry(resXCH, Form("#LT#Deltax#GT=%2.5f #mum", resXCH->GetMean()), "");
+    legendresXCH->AddEntry(resXCH, Form("RMS=%2.5f #mum", resXCH->GetRMS()), "");
     legendresXCH->Draw();
 
     auto canvasResYSC = new TCanvas("resYSC", "resYSC", 800, 800);
     canvasResYSC->SetLogy();
     resYSC->Draw();
-    auto legendresYSC = new TLegend(0.6, 0.68, 0.9, 0.88);
+    auto legendresYSC = new TLegend(0.6, 0.65, 0.87, 0.88);
     legendresYSC->SetHeader("150 events PbPb MB");
     legendresYSC->AddEntry(resYSC, Form("Entries: %d ", (int)resYSC->GetEntries()), "LF");
-    legendresYSC->AddEntry(resYSC, Form("#LT#Deltay#GT=%2.5f rad", resYSC->GetMean()), "");
-    legendresYSC->AddEntry(resYSC, Form("RMS=%2.5f", resYSC->GetRMS()), "");
+    legendresYSC->AddEntry(resYSC, Form("#LT#Deltay#GT=%2.5f #mum", resYSC->GetMean()), "");
+    legendresYSC->AddEntry(resYSC, Form("RMS=%2.5f #mum", resYSC->GetRMS()), "");
     legendresYSC->Draw();
 
     auto canvasResYSH = new TCanvas("resYSH", "resYSH", 800, 800);
     canvasResYSH->SetLogy();
     resYSH->Draw();
-    auto legendresYSH = new TLegend(0.6, 0.68, 0.9, 0.88);
+    auto legendresYSH = new TLegend(0.6, 0.65, 0.87, 0.88);
     legendresYSH->SetHeader("150 events PbPb MB");
     legendresYSH->AddEntry(resYSH, Form("Entries: %d ", (int)resYSH->GetEntries()), "LF");
-    legendresYSH->AddEntry(resYSH, Form("#LT#Deltay#GT=%2.5f rad", resYSH->GetMean()), "");
-    legendresYSH->AddEntry(resYSH, Form("RMS=%2.5f", resYSH->GetRMS()), "");
+    legendresYSH->AddEntry(resYSH, Form("#LT#Deltay#GT=%2.5f #mum", resYSH->GetMean()), "");
+    legendresYSH->AddEntry(resYSH, Form("RMS=%2.5f #mum", resYSH->GetRMS()), "");
     legendresYSH->Draw();
 
     auto canvasResYCH = new TCanvas("resYCH", "resYCH", 800, 800);
     canvasResYCH->SetLogy();
     resYCH->Draw();
-    auto legendresYCH = new TLegend(0.6, 0.68, 0.9, 0.88);
+    auto legendresYCH = new TLegend(0.6, 0.65, 0.87, 0.88);
     legendresYCH->SetHeader("150 events PbPb MB");
     legendresYCH->AddEntry(resYCH, Form("Entries: %d ", (int)resYCH->GetEntries()), "LF");
-    legendresYCH->AddEntry(resYCH, Form("#LT#Deltay#GT=%2.5f rad", resYCH->GetMean()), "");
-    legendresYCH->AddEntry(resYCH, Form("RMS=%2.5f", resYCH->GetRMS()), "");
+    legendresYCH->AddEntry(resYCH, Form("#LT#Deltay#GT=%2.5f #mum", resYCH->GetMean()), "");
+    legendresYCH->AddEntry(resYCH, Form("RMS=%2.5f #mum", resYCH->GetRMS()), "");
     legendresYCH->Draw();
 
     auto canvasResZSC = new TCanvas("resZSC", "resZSC", 800, 800);
     canvasResZSC->SetLogy();
     resZSC->Draw();
-    auto legendresZSC = new TLegend(0.6, 0.68, 0.9, 0.88);
+    auto legendresZSC = new TLegend(0.6, 0.65, 0.87, 0.88);
     legendresZSC->SetHeader("150 events PbPb MB");
     legendresZSC->AddEntry(resZSC, Form("Entries: %d ", (int)resZSC->GetEntries()), "LF");
-    legendresZSC->AddEntry(resZSC, Form("#LT#Deltaz#GT=%2.5f rad", resZSC->GetMean()), "");
-    legendresZSC->AddEntry(resZSC, Form("RMS=%2.5f", resZSC->GetRMS()), "");
+    legendresZSC->AddEntry(resZSC, Form("#LT#Deltaz#GT=%2.5f #mum", resZSC->GetMean()), "");
+    legendresZSC->AddEntry(resZSC, Form("RMS=%2.5f #mum", resZSC->GetRMS()), "");
     legendresZSC->Draw();
 
     auto canvasResZSH = new TCanvas("resZSH", "resZSH", 800, 800);
     canvasResZSH->SetLogy();
     resZSH->Draw();
-    auto legendresZSH = new TLegend(0.6, 0.68, 0.9, 0.88);
+    auto legendresZSH = new TLegend(0.6, 0.65, 0.87, 0.88);
     legendresZSH->SetHeader("150 events PbPb MB");
     legendresZSH->AddEntry(resZSH, Form("Entries: %d ", (int)resZSH->GetEntries()), "LF");
-    legendresZSH->AddEntry(resZSH, Form("#LT#Deltaz#GT=%2.5f rad", resZSH->GetMean()), "");
-    legendresZSH->AddEntry(resZSH, Form("RMS=%2.5f", resZSH->GetRMS()), "");
+    legendresZSH->AddEntry(resZSH, Form("#LT#Deltaz#GT=%2.5f #mum", resZSH->GetMean()), "");
+    legendresZSH->AddEntry(resZSH, Form("RMS=%2.5f #mum", resZSH->GetRMS()), "");
     legendresZSH->Draw();
 
     auto canvasResZCH = new TCanvas("resZCH", "resZCH", 800, 800);
     canvasResZCH->SetLogy();
     resZCH->Draw();
-    auto legendresZCH = new TLegend(0.6, 0.68, 0.9, 0.88);
+    auto legendresZCH = new TLegend(0.6, 0.65, 0.87, 0.88);
     legendresZCH->SetHeader("150 events PbPb MB");
     legendresZCH->AddEntry(resZCH, Form("Entries: %d ", (int)resZCH->GetEntries()), "LF");
-    legendresZCH->AddEntry(resZCH, Form("#LT#Deltaz#GT=%2.5f rad", resZCH->GetMean()), "");
-    legendresZCH->AddEntry(resZCH, Form("RMS=%2.5f", resZCH->GetRMS()), "");
+    legendresZCH->AddEntry(resZCH, Form("#LT#Deltaz#GT=%2.5f #mum", resZCH->GetMean()), "");
+    legendresZCH->AddEntry(resZCH, Form("RMS=%2.5f #mum", resZCH->GetRMS()), "");
     legendresZCH->Draw();
-    
+
+    auto canvasContributorsSerialCUDA = new TCanvas("canvasContributorsSerialCUDA", "ContributorsSerialCUDA", 800, 1100);
+    canvasContributorsSerialCUDA->SetLogy();
+    contributorsSerialCUDA->Draw();
+    auto legendcontributorsSerialCUDA = new TLegend(0.6, 0.65, 0.87, 0.88);
+    legendcontributorsSerialCUDA->SetHeader("150 events PbPb MB");
+    legendcontributorsSerialCUDA->AddEntry(contributorsSerialCUDA, Form("Entries: %d ", (int)contributorsSerialCUDA->GetEntries()), "LF");
+    legendcontributorsSerialCUDA->AddEntry(contributorsSerialCUDA, Form("#LT#Deltaz#GT=%2.5f (cont)", contributorsSerialCUDA->GetMean()), "");
+    legendcontributorsSerialCUDA->AddEntry(contributorsSerialCUDA, Form("RMS=%2.5f (cont)", contributorsSerialCUDA->GetRMS()), "");
+    legendcontributorsSerialCUDA->Draw();
+
+    auto canvasContributorsSerialHIP = new TCanvas("canvasContributorsSerialHIP", "ContributorsSerialHIP", 800, 1100);
+    canvasContributorsSerialHIP->SetLogy();
+    contributorsSerialHIP->Draw();
+    auto legendcontributorsSerialHIP = new TLegend(0.6, 0.65, 0.87, 0.88);
+    legendcontributorsSerialHIP->SetHeader("150 events PbPb MB");
+    legendcontributorsSerialHIP->AddEntry(contributorsSerialHIP, Form("Entries: %d ", (int)contributorsSerialHIP->GetEntries()), "LF");
+    legendcontributorsSerialHIP->AddEntry(contributorsSerialHIP, Form("#LT#Deltaz#GT=%2.5f (cont)", contributorsSerialHIP->GetMean()), "");
+    legendcontributorsSerialHIP->AddEntry(contributorsSerialHIP, Form("RMS=%2.5f (cont)", contributorsSerialHIP->GetRMS()), "");
+    legendcontributorsSerialHIP->Draw();
+
+    auto canvasContributorsCUDAHIP = new TCanvas("canvasContributorsCUDAHIP", "ContributorsCUDAHIP", 800, 1100);
+    canvasContributorsCUDAHIP->SetLogy();
+    contributorsCUDAHIP->Draw();
+    auto legendcontributorsCUDAHIP = new TLegend(0.6, 0.65, 0.87, 0.88);
+    legendcontributorsCUDAHIP->SetHeader("150 events PbPb MB");
+    legendcontributorsCUDAHIP->AddEntry(contributorsCUDAHIP, Form("Entries: %d ", (int)contributorsCUDAHIP->GetEntries()), "LF");
+    legendcontributorsCUDAHIP->AddEntry(contributorsCUDAHIP, Form("#LT#Deltaz#GT=%2.5f (cont)", contributorsCUDAHIP->GetMean()), "");
+    legendcontributorsCUDAHIP->AddEntry(contributorsCUDAHIP, Form("RMS=%2.5f (cont)", contributorsCUDAHIP->GetRMS()), "");
+    legendcontributorsCUDAHIP->Draw();
+
     canvasResXSC->SaveAs("/home/mconcas/cernbox/thesis_pictures/ResXSC.png", "r");
     canvasResXSH->SaveAs("/home/mconcas/cernbox/thesis_pictures/ResXSH.png", "r");
     canvasResXCH->SaveAs("/home/mconcas/cernbox/thesis_pictures/ResXCH.png", "r");
@@ -721,6 +764,9 @@ void plotResidualsGPU(TFile *resSerial, TFile *resCUDA, TFile *resHIP)
     canvasResZSC->SaveAs("/home/mconcas/cernbox/thesis_pictures/ResZSC.png", "r");
     canvasResZSH->SaveAs("/home/mconcas/cernbox/thesis_pictures/ResZSH.png", "r");
     canvasResZCH->SaveAs("/home/mconcas/cernbox/thesis_pictures/ResZCH.png", "r");
+    canvasContributorsSerialCUDA->SaveAs("/home/mconcas/cernbox/thesis_pictures/resContSerialCUDA.png", "r");
+    canvasContributorsSerialHIP->SaveAs("/home/mconcas/cernbox/thesis_pictures/resContSerialHIP.png", "r");
+    canvasContributorsCUDAHIP->SaveAs("/home/mconcas/cernbox/thesis_pictures/resContCUDAHIP.png", "r");
 }
 
 void plotDBGCPU(TFile *dbgCPUFile, TFile *l2tiFile)
