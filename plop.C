@@ -77,7 +77,7 @@ int plop(const std::string inputClustersITS = "o2clus_its.root",
     itsClusters.SetBranchAddress("ITSClustersROF", &rofs);
     itsClusters.GetEntry(0);
 
-    TH2F *zr = new TH2F("zr", "Clusters on the longitudinal IB section;z (cm);r (cm)", 1000, -15.f, 15.f, 1000, -5.f, 5.f);
+    TH2F *zr = new TH2F("zr", "Clusters on the longitudinal IB section;z (cm);r (cm)", 500, -15.f, 15.f, 500, 0.f, 5.f);
     TH2F *tr = new TH2F("tr", "Clusters on the transverse IB section;x (cm);y (cm)", 1000, -5.f, 5.f, 1000, -5.f, 5.f);
     for (size_t iROfCount{0}; iROfCount < rofs->size(); ++iROfCount)
     {
@@ -100,7 +100,7 @@ int plop(const std::string inputClustersITS = "o2clus_its.root",
             /// Clusters are stored in the tracking frame
             auto xyz = c.getXYZGloRot(*geom);
             // std::cout << "\tcluster " << clusterId << " " << xyz.x() << " " << xyz.y() << " " << xyz.z() << " " << std::endl;
-            zr->Fill(xyz.z(), signnum_c(xyz.y()) * TMath::Sqrt(xyz.x() * xyz.x() + xyz.y() * xyz.y()));
+            zr->Fill(xyz.z(), TMath::Sqrt(xyz.x() * xyz.x() + xyz.y() * xyz.y()));
             tr->Fill(xyz.x(), xyz.y());
             ++clusterId;
         }
