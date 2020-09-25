@@ -252,6 +252,7 @@ void plotDeltas()
     fakechi2->Scale(1. / truechi2->GetEntries());
     truechi2->Scale(1. / truechi2->GetEntries());
 
+    // ------
     auto trackTree = (TTree *)inFile->Get("TrackParams");
     auto validTracksChi2 = new TH1F("validTracksChi2", "Valid final tracks #chi^{2};#chi^{2}",
                                     nBins, minchi, maxchi);
@@ -272,10 +273,10 @@ void plotDeltas()
     trackTree->Draw("pt>>validTracksPt", "!fake", "goff");
     trackTree->Draw("pt>>fakeTracksPt", "fake", "goff");
 
-    validTracksChi2->Scale(1. / validTracksChi2->GetEntries());
-    fakeTracksChi2->Scale(1. / fakeTracksChi2->GetEntries());
-    validTracksPt->Scale(1. / validTracksPt->GetEntries());
-    fakeTracksPt->Scale(1. / fakeTracksPt->GetEntries());
+    validTracksChi2->Scale(1. / (fakeTracksChi2->GetEntries() + fakeTracksChi2->GetEntries()));
+    fakeTracksChi2->Scale(1. / (fakeTracksChi2->GetEntries() + fakeTracksChi2->GetEntries()));
+    validTracksPt->Scale(1. / (fakeTracksPt->GetEntries() + validTracksPt->GetEntries()));
+    fakeTracksPt->Scale(1. / (fakeTracksPt->GetEntries() + validTracksPt->GetEntries()));
 
     // Plot!
     auto canvasL4 = new TCanvas("canvasL4", "Layer 4", cx, cy);
@@ -422,17 +423,17 @@ void plotDeltas()
     validOutTrackMatchingCluster2->Draw("hist");
     validOutTrackMismatchingCluster2->Draw("same hist");
 
-    auto canvasTracks = new TCanvas("canvasTracks", "Tracks", cx, cy / 2);
+    auto canvasTracks = new TCanvas("canvasTracks", "Tracks", cx, cy);
     canvasTracks->cd();
-    canvasTracks->Divide(2);
+    canvasTracks->Divide(4);
     canvasTracks->cd(1);
     gPad->SetLogy();
     validTracksChi2->Draw("hist");
     fakeTracksChi2->Draw("same hist");
     canvasTracks->cd(2);
     // gPad->SetLogy();
-    fakeTracksPt->Draw("hist");
-    validTracksPt->Draw("same hist");
+    validTracksPt->Draw("hist");
+    fakeTracksPt->Draw("same hist");
 
     canvasL4->SaveAs("layer4dxdy.png");
     canvasL3->SaveAs("layer3dxdy.png");
