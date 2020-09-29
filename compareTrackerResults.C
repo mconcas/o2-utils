@@ -64,10 +64,10 @@ void compareTrackerResults(const std::string inFileNormal = "nosmooth/dbg_ITSTra
     trackTreeSmoothed->Draw("pt>>validTracksPtSmoothed", "!fake", "goff");
     trackTreeSmoothed->Draw("pt>>fakeTracksPtSmoothed", "fake", "goff");
 
-    validTracksChi2->Scale(1. / validTracksChi2->GetEntries());
-    fakeTracksChi2->Scale(1. / fakeTracksChi2->GetEntries());
-    validTracksChi2Smoothed->Scale(1. / validTracksChi2Smoothed->GetEntries());
-    fakeTracksChi2Smoothed->Scale(1. / fakeTracksChi2Smoothed->GetEntries());
+    // validTracksChi2->Scale(1. / validTracksChi2->GetEntries());
+    // fakeTracksChi2->Scale(1. / fakeTracksChi2->GetEntries());
+    // validTracksChi2Smoothed->Scale(1. / validTracksChi2Smoothed->GetEntries());
+    // fakeTracksChi2Smoothed->Scale(1. / fakeTracksChi2Smoothed->GetEntries());
 
     auto canvasTracks = new TCanvas("canvasTracks", "Tracks", cx, cy);
     canvasTracks->cd();
@@ -92,13 +92,13 @@ void compareTrackerResults(const std::string inFileNormal = "nosmooth/dbg_ITSTra
     ratioFakeChi2->Draw();
     ratioFakeChi2->GetUpperPad()->SetLogy();
     ratioFakeChi2->GetLowerRefGraph()->SetMinimum(0.f);
-    ratioFakeChi2->GetLowerRefGraph()->SetMaximum(2.f);
+    ratioFakeChi2->GetLowerRefGraph()->SetMaximum(10.f);
     canvasTracksChi2->cd(2);
     auto ratioTrueChi2 = new TRatioPlot(validTracksChi2Smoothed, validTracksChi2);
     ratioTrueChi2->Draw();
     ratioTrueChi2->GetUpperPad()->SetLogy();
     ratioTrueChi2->GetLowerRefGraph()->SetMinimum(0.f);
-    ratioTrueChi2->GetLowerRefGraph()->SetMaximum(2.f);
+    ratioTrueChi2->GetLowerRefGraph()->SetMaximum(10.f);
     canvasTracksChi2->Update();
 
     canvasTracksChi2->SaveAs("compareTrackerChi2.png");

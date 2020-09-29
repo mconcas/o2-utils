@@ -9,10 +9,10 @@
 
 void plotDeltas()
 {
-    const float dymin{-5.f};
-    const float dymax{5.f};
-    const float dzmin{-5.f};
-    const float dzmax{5.f};
+    const float dymin{-1.f};
+    const float dymax{1.f};
+    const float dzmin{-1.f};
+    const float dzmax{1.f};
     const float minchi{0};
     const float maxchi{2e3};
     const int nBins{300};
@@ -130,7 +130,7 @@ void plotDeltas()
     auto trueDYDZL3 = new TH2F("trueDYDZL3", "Layer 3 True #DeltaY#DeltaZ;#DeltaY (cm);#DeltaZ (cm)", nBins, dymin, dymax, nBins, dzmin, dzmax);
 
     auto fakechinchiout3 = new TH2F("fakechinchiout3", "Layer 3 Fake;#chi^{2}_{in};#chi^{2}_{Out}", nBins, minchi / 100, maxchi / 100, nBins, minchi / 100, maxchi / 100);
-    auto truechinchiout3 = new TH2F("truechinchiout3", "Layer 3 True#chi^{2}_{in};#chi^{2}_{Out}", nBins, minchi / 100, maxchi / 100, nBins, minchi / 100, maxchi / 100);
+    auto truechinchiout3 = new TH2F("truechinchiout3", "Layer 3 True;#chi^{2}_{in};#chi^{2}_{Out}", nBins, minchi / 100, maxchi / 100, nBins, minchi / 100, maxchi / 100);
     truechinchiout3->SetLineColor(kBlue);
     fakechinchiout3->SetLineColor(kRed);
 
@@ -261,10 +261,10 @@ void plotDeltas()
                                    nBins, minchi, maxchi);
     fakeTracksChi2->SetLineColor(kRed);
 
-    auto validTracksPt = new TH1F("validTracksPt", "Valid final tracks #p_{T};#p_{T}",
+    auto validTracksPt = new TH1F("validTracksPt", "Valid final tracks #it{p}_{T};#it{p}_{T}",
                                   nBins, minpt, maxpt);
     validTracksPt->SetLineColor(kBlue);
-    auto fakeTracksPt = new TH1F("fakeTracksPt", "Fake final tracks #p_{T};#p_{T}",
+    auto fakeTracksPt = new TH1F("fakeTracksPt", "Fake final tracks #it{p}_{T};#it{p}_{T}",
                                  nBins, minpt, maxpt);
     fakeTracksPt->SetLineColor(kRed);
 
@@ -425,7 +425,7 @@ void plotDeltas()
 
     auto canvasTracks = new TCanvas("canvasTracks", "Tracks", cx, cy);
     canvasTracks->cd();
-    canvasTracks->Divide(4);
+    canvasTracks->Divide(2);
     canvasTracks->cd(1);
     gPad->SetLogy();
     validTracksChi2->Draw("hist");
