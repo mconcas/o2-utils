@@ -64,17 +64,22 @@ void compareTrackerResults(const std::string inFileNormal = "nosmooth/dbg_ITSTra
     trackTreeSmoothed->Draw("pt>>validTracksPtSmoothed", "!fake", "goff");
     trackTreeSmoothed->Draw("pt>>fakeTracksPtSmoothed", "fake", "goff");
 
-    // validTracksChi2->Scale(1. / validTracksChi2->GetEntries());
-    // fakeTracksChi2->Scale(1. / fakeTracksChi2->GetEntries());
-    // validTracksChi2Smoothed->Scale(1. / validTracksChi2Smoothed->GetEntries());
-    // fakeTracksChi2Smoothed->Scale(1. / fakeTracksChi2Smoothed->GetEntries());
+    validTracksChi2->Scale(1. / validTracksChi2->GetEntries());
+    fakeTracksChi2->Scale(1. / fakeTracksChi2->GetEntries());
+    validTracksChi2Smoothed->Scale(1. / validTracksChi2Smoothed->GetEntries());
+    fakeTracksChi2Smoothed->Scale(1. / fakeTracksChi2Smoothed->GetEntries());
+
+    validTracksPt->Scale(1. / validTracksPt->GetEntries());
+    fakeTracksPt->Scale(1. / fakeTracksPt->GetEntries());
+    validTracksPtSmoothed->Scale(1. / validTracksPtSmoothed->GetEntries());
+    fakeTracksPtSmoothed->Scale(1. / fakeTracksPtSmoothed->GetEntries());
 
     auto canvasTracks = new TCanvas("canvasTracks", "Tracks", cx, cy);
     canvasTracks->cd();
     canvasTracks->Divide(2);
     auto ratioFake = new TRatioPlot(fakeTracksPtSmoothed, fakeTracksPt);
     canvasTracks->cd(1);
-    ratioFake->Draw();
+    ratioFake->Draw("hist");
     ratioFake->GetLowerRefGraph()->SetMinimum(0.f);
     ratioFake->GetLowerRefGraph()->SetMaximum(10.f);
     canvasTracks->cd(2);
@@ -95,7 +100,7 @@ void compareTrackerResults(const std::string inFileNormal = "nosmooth/dbg_ITSTra
     ratioFakeChi2->GetLowerRefGraph()->SetMaximum(10.f);
     canvasTracksChi2->cd(2);
     auto ratioTrueChi2 = new TRatioPlot(validTracksChi2Smoothed, validTracksChi2);
-    ratioTrueChi2->Draw();
+    ratioTrueChi2->Draw("hist");
     ratioTrueChi2->GetUpperPad()->SetLogy();
     ratioTrueChi2->GetLowerRefGraph()->SetMinimum(0.f);
     ratioTrueChi2->GetLowerRefGraph()->SetMaximum(10.f);

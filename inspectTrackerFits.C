@@ -2,215 +2,190 @@
 #include <TTree.h>
 #include <TCanvas.h>
 #include <TFile.h>
-#include <TH1I.h>
+#include <TH1F.h>
 #include <TH1F.h>
 #include <TH2F.h>
 #include <TPad.h>
 #include <TLeaf.h>
+#include <THStack.h>
+#include <TColor.h>
 
 #include <iostream>
 #include <array>
 #endif
 
-std::pair<int, int> getMainId(std::array<int, 7> &ids, std::array<int, 7> &eids)
-{
-    std::pair<int, int> maxOccurrenceValues = std::make_pair<int, int>(-999, -999);
-    int count{0};
-
-    for (int iCluster = 0; iCluster < 7; ++iCluster)
-    {
-        if (ids[iCluster] == maxOccurrenceValues.first && eids[iCluster] == maxOccurrenceValues.second)
-        {
-            ++count;
-        }
-        else
-        {
-            if (count != 0)
-                // only in the first iteration count can be 0 at this point
-                --count;
-            if (count == 0)
-            {
-                maxOccurrenceValues.first = ids[iCluster];
-                maxOccurrenceValues.second = eids[iCluster];
-                count = 1;
-            }
-        }
-    }
-    return maxOccurrenceValues;
-}
-
-void inspectTrackerFits()
+void inspectTrackerFits(const int lvl = 1)
 {
     const float minchi{0};
-    const float maxchi{2e3};
+    // const float maxchi{2e3};
+    std::array<std::array<int, 7>, 3> maxchi;
+    // maxchi[0] = {(int)2.5e4, (int)1.5e4, (int)6e3, 0, 0, 0, 0};
+    // maxchi[1] = {(int)3e-5, (int)2e-3, (int)15, (int)1e2, (int)3.5e2, (int)3.5e2, (int)3e2};
+    // maxchi[2] = {(int)1.5e3, (int)8e2, (int)5e2, (int)1.5e2, (int)1e2, (int)2e-6, (int)1e-9};
+    maxchi[0] = {(int)10e4, (int)10e4, (int)10e4, (int)10e4, (int)10e4, (int)10e4, (int)10e4};
+    maxchi[1] = {(int)1e3, (int)1e3, (int)1e3, (int)1e3, (int)1e3, (int)1e3, (int)1e3};
+    maxchi[2] = {(int)1e3, (int)1e3, (int)1e3, (int)1e3, (int)1e3, (int)1e3, (int)1e3};
+    std::array<float, 3> maxChiSmoother = {0.001, 0.001, 1000};
     const int nBins{300};
     const int cx{1600};
     const int cy{1600};
     const float minpt{0.};
     const float maxpt{5.};
-
+    std::array<EColor, 7> stackColors = {kBlack, kYellow, kOrange, kRed, kBlue, kGreen, kViolet};
+    bool isFake;
     auto inFile = TFile::Open("dbg_ITSTrackerCPU.root");
-
-    auto treeFit1Info = (TTree *)inFile->Get("Fit1Info");
-    auto treeFit2Info = (TTree *)inFile->Get("Fit2Info");
-    auto treeFit3Info = (TTree *)inFile->Get("Fit3Info");
-
-    // Layer 0
-    auto histSumChiValidF2F3Layer0 = new TH1F("histSumChiValidF2F3Layer0", "Layer 0;#chi^{2}_{F2+F3}", nBins, minchi, maxchi);
-    histSumChiValidF2F3Layer0->SetLineColor(kBlue);
-    auto histSumChiFakeF2F3Layer0 = new TH1F("histSumChiFakeF2F3Layer0", "Layer 0;#chi^{2}_{F2+F3}", nBins, minchi, maxchi);
-    histSumChiFakeF2F3Layer0->SetLineColor(kRed);
-
-    // Layer 1
-    auto histSumChiValidF2F3Layer1 = new TH1F("histSumChiValidF2F3Layer1", "Layer 1;#chi^{2}_{F2+F3}", nBins, minchi, maxchi);
-    histSumChiValidF2F3Layer1->SetLineColor(kBlue);
-    auto histSumChiFakeF2F3Layer1 = new TH1F("histSumChiFakeF2F3Layer1", "Layer 1;#chi^{2}_{F2+F3}", nBins, minchi, maxchi);
-    histSumChiFakeF2F3Layer1->SetLineColor(kRed);
-
-    // Layer 2
-    auto histSumChiValidF2F3Layer2 = new TH1F("histSumChiValidF2F3Layer2", "Layer 2;#chi^{2}_{F2+F3}", nBins, minchi, maxchi);
-    histSumChiValidF2F3Layer2->SetLineColor(kBlue);
-    auto histSumChiFakeF2F3Layer2 = new TH1F("histSumChiFakeF2F3Layer2", "Layer 2;#chi^{2}_{F2+F3}", nBins, minchi, maxchi);
-    histSumChiFakeF2F3Layer2->SetLineColor(kRed);
-
-    // Layer 3
-    auto histSumChiValidF2F3Layer3 = new TH1F("histSumChiValidF2F3Layer3", "Layer 3;#chi^{2}_{F2+F3}", nBins, minchi, maxchi);
-    histSumChiValidF2F3Layer3->SetLineColor(kBlue);
-    auto histSumChiFakeF2F3Layer3 = new TH1F("histSumChiFakeF2F3Layer3", "Layer 3;#chi^{2}_{F2+F3}", nBins, minchi, maxchi);
-    histSumChiFakeF2F3Layer3->SetLineColor(kRed);
-
-    // Layer 4
-    auto histSumChiValidF2F3Layer4 = new TH1F("histSumChiValidF2F3Layer4", "Layer 4;#chi^{2}_{F2+F3}", nBins, minchi, maxchi);
-    histSumChiValidF2F3Layer4->SetLineColor(kBlue);
-    auto histSumChiFakeF2F3Layer4 = new TH1F("histSumChiFakeF2F3Layer4", "Layer 4;#chi^{2}_{F2+F3}", nBins, minchi, maxchi);
-    histSumChiFakeF2F3Layer4->SetLineColor(kRed);
-
-    // Layer 5
-    auto histSumChiValidF2F3Layer5 = new TH1F("histSumChiValidF2F3Layer5", "Layer 5;#chi^{2}_{F2+F3}", nBins, minchi, maxchi);
-    histSumChiValidF2F3Layer5->SetLineColor(kBlue);
-    auto histSumChiFakeF2F3Layer5 = new TH1F("histSumChiFakeF2F3Layer5", "Layer 5;#chi^{2}_{F2+F3}", nBins, minchi, maxchi);
-    histSumChiFakeF2F3Layer5->SetLineColor(kRed);
-
-    // Layer 6
-    auto histSumChiValidF2F3Layer6 = new TH1F("histSumChiValidF2F3Layer6", "Layer 6;#chi^{2}_{F2+F3}", nBins, minchi, maxchi);
-    histSumChiValidF2F3Layer6->SetLineColor(kBlue);
-    auto histSumChiFakeF2F3Layer6 = new TH1F("histSumChiFakeF2F3Layer6", "Layer 6;#chi^{2}_{F2+F3}", nBins, minchi, maxchi);
-    histSumChiFakeF2F3Layer6->SetLineColor(kRed);
-
-    // Fake clusters Layer
-    auto histFakeIndices = new TH1I("histFakeIndices", "Fake clusters layers", 7, 0, 7);
-
-    // Fake clusters number
-    auto histFakeCounters = new TH1I("histFakeNumber", "Number of fake clusters", 7, 0, 7);
-
-    std::cout << "Single treeFit2 has nEntries: " << treeFit2Info->GetEntriesFast() << std::endl;
-    for (auto iEnt{0}; iEnt < treeFit2Info->GetEntriesFast(); ++iEnt)
+    std::array<TTree *, 3> fitTreesInfo;
+    auto treeTrackParams = (TTree *)inFile->Get("TrackParams");
+    auto treeSmoothingParams = (TTree *)inFile->Get("SmoothingParams");
+    for (auto iTree{0}; iTree < 3; ++iTree)
     {
-        treeFit2Info->GetEntry(iEnt);
-        treeFit3Info->GetEntry(iEnt);
-
-        float chiF2Layer0 = treeFit2Info->GetLeaf("Layer0chi2")->GetValue(0);
-        float chiF3Layer0 = treeFit3Info->GetLeaf("Layer0chi2")->GetValue(0);
-        float chiF2Layer1 = treeFit2Info->GetLeaf("Layer1chi2")->GetValue(0);
-        float chiF3Layer1 = treeFit3Info->GetLeaf("Layer1chi2")->GetValue(0);
-        float chiF2Layer2 = treeFit2Info->GetLeaf("Layer2chi2")->GetValue(0);
-        float chiF3Layer2 = treeFit3Info->GetLeaf("Layer2chi2")->GetValue(0);
-        float chiF2Layer3 = treeFit2Info->GetLeaf("Layer3chi2")->GetValue(0);
-        float chiF3Layer3 = treeFit3Info->GetLeaf("Layer3chi2")->GetValue(0);
-        float chiF2Layer4 = treeFit2Info->GetLeaf("Layer4chi2")->GetValue(0);
-        float chiF3Layer4 = treeFit3Info->GetLeaf("Layer4chi2")->GetValue(0);
-        float chiF2Layer5 = treeFit2Info->GetLeaf("Layer5chi2")->GetValue(0);
-        float chiF3Layer5 = treeFit3Info->GetLeaf("Layer5chi2")->GetValue(0);
-        float chiF2Layer6 = treeFit2Info->GetLeaf("Layer6chi2")->GetValue(0);
-        float chiF3Layer6 = treeFit3Info->GetLeaf("Layer6chi2")->GetValue(0);
-
-        std::array<int, 7> tIds = {(int)treeFit2Info->GetLeaf("Layer0tID")->GetValue(0),
-                                   (int)treeFit2Info->GetLeaf("Layer1tID")->GetValue(0),
-                                   (int)treeFit2Info->GetLeaf("Layer2tID")->GetValue(0),
-                                   (int)treeFit2Info->GetLeaf("Layer3tID")->GetValue(0),
-                                   (int)treeFit2Info->GetLeaf("Layer4tID")->GetValue(0),
-                                   (int)treeFit2Info->GetLeaf("Layer5tID")->GetValue(0),
-                                   (int)treeFit2Info->GetLeaf("Layer6tID")->GetValue(0)};
-        std::array<int, 7> eIds = {(int)treeFit2Info->GetLeaf("Layer0eID")->GetValue(0),
-                                   (int)treeFit2Info->GetLeaf("Layer1eID")->GetValue(0),
-                                   (int)treeFit2Info->GetLeaf("Layer2eID")->GetValue(0),
-                                   (int)treeFit2Info->GetLeaf("Layer3eID")->GetValue(0),
-                                   (int)treeFit2Info->GetLeaf("Layer4eID")->GetValue(0),
-                                   (int)treeFit2Info->GetLeaf("Layer5eID")->GetValue(0),
-                                   (int)treeFit2Info->GetLeaf("Layer6eID")->GetValue(0)};
-
-        bool isFakeF2 = treeFit2Info->GetLeaf("fake")->GetValue(0);
-
-        if (isFakeF2)
-        {
-            histSumChiFakeF2F3Layer0->Fill(chiF2Layer0 + chiF3Layer0);
-            histSumChiFakeF2F3Layer1->Fill(chiF2Layer1 + chiF3Layer1);
-            histSumChiFakeF2F3Layer2->Fill(chiF2Layer2 + chiF3Layer2);
-            histSumChiFakeF2F3Layer3->Fill(chiF2Layer3 + chiF3Layer3);
-            histSumChiFakeF2F3Layer4->Fill(chiF2Layer4 + chiF3Layer4);
-            histSumChiFakeF2F3Layer5->Fill(chiF2Layer5 + chiF3Layer5);
-            histSumChiFakeF2F3Layer6->Fill(chiF2Layer6 + chiF3Layer6);
-
-            int mainID = getMainId(tIds, eIds).first;
-            int maineID = getMainId(tIds, eIds).second;
-            int fakeCounter{0};
-            for (auto iCluster{0}; iCluster < 7; ++iCluster)
-            {
-                if (tIds[iCluster] != mainID || eIds[iCluster] != maineID)
-                {
-                    histFakeIndices->AddBinContent(iCluster);
-                    fakeCounter++;
-                }
-            }
-            histFakeCounters->AddBinContent(fakeCounter);
-        }
-        else
-        {
-            histSumChiValidF2F3Layer0->Fill(chiF2Layer0 + chiF3Layer0);
-            histSumChiValidF2F3Layer1->Fill(chiF2Layer1 + chiF3Layer1);
-            histSumChiValidF2F3Layer2->Fill(chiF2Layer2 + chiF3Layer2);
-            histSumChiValidF2F3Layer3->Fill(chiF2Layer3 + chiF3Layer3);
-            histSumChiValidF2F3Layer4->Fill(chiF2Layer4 + chiF3Layer4);
-            histSumChiValidF2F3Layer5->Fill(chiF2Layer5 + chiF3Layer5);
-            histSumChiValidF2F3Layer6->Fill(chiF2Layer6 + chiF3Layer6);
-        }
+        fitTreesInfo[iTree] = (TTree *)inFile->Get(Form("Fit%dInfo", iTree + 1));
     }
 
-    auto canvas = new TCanvas("chi2sums", "chi2sums", cy, cx);
-    canvas->Divide(3, 3);
-    canvas->cd(1);
-    gPad->SetLogy();
-    histSumChiValidF2F3Layer0->Draw();
-    histSumChiFakeF2F3Layer0->Draw("same");
-    canvas->cd(2);
-    gPad->SetLogy();
-    histSumChiValidF2F3Layer1->Draw();
-    histSumChiFakeF2F3Layer1->Draw("same");
-    canvas->cd(3);
-    gPad->SetLogy();
-    histSumChiValidF2F3Layer2->Draw();
-    histSumChiFakeF2F3Layer2->Draw("same");
-    canvas->cd(4);
-    gPad->SetLogy();
-    histSumChiValidF2F3Layer3->Draw();
-    histSumChiFakeF2F3Layer3->Draw("same");
-    canvas->cd(5);
-    gPad->SetLogy();
-    histSumChiValidF2F3Layer4->Draw();
-    histSumChiFakeF2F3Layer4->Draw("same");
-    canvas->cd(6);
-    gPad->SetLogy();
-    histSumChiValidF2F3Layer5->Draw();
-    histSumChiFakeF2F3Layer5->Draw("same");
-    canvas->cd(7);
-    gPad->SetLogy();
-    histSumChiValidF2F3Layer6->Draw();
-    histSumChiFakeF2F3Layer6->Draw("same");
-    canvas->cd(8);
-    histFakeIndices->Draw();
-    canvas->cd(9);
-    gPad->SetLogy();
-    histFakeCounters->Draw();
+    std::array<std::array<TH1F *, 7>, 3> histChi2Valid;
+    std::array<std::array<TH1F *, 7>, 3> histChi2Fake;
+    std::array<TH1F *, 3> histSmoothChi2Valid;
+    std::array<TH1F *, 3> histSmoothChi2Fake;
+    std::array<TH1F *, 7> clusterFakeStacker;
+    std::array<TCanvas *, 3> fitCanvas;
+    std::array<TCanvas *, 3> smoothCanvas;
+    auto stackClusters = new THStack("clustersStack", "Fake clusters;Layer");
 
-    canvas->SaveAs("fitInspectionChi2.pdf", "r");
+    auto histClusterFakes = new TH1F("clustersFake", "Fake clusters;Layer", 7, -0.5, 6.5);
+    auto histNFakeClusters = new TH1F("nFakeClusters", "Fake clusters per track;N_{fake}", 8, -0.5, 7.5);
+    histClusterFakes->SetMinimum(0.0000000001);
+    // histNFakeClusters->SetMinimum(0.0000000001);
+    if (lvl > 1)
+    {
+        for (size_t iS{0}; iS < clusterFakeStacker.size(); ++iS)
+        {
+            clusterFakeStacker[iS] = new TH1F(Form("nFakeClusters%d", (int)iS), "Fake clusters;Layer", 7, -0.5, 6.5);
+            clusterFakeStacker[iS]->SetLineColor(stackColors[iS]);
+            clusterFakeStacker[iS]->SetFillColor(stackColors[iS]);
+            stackClusters->Add(clusterFakeStacker[iS]);
+        }
+
+        for (auto iEnt{0}; iEnt < treeTrackParams->GetEntriesFast(); ++iEnt)
+        {
+            treeTrackParams->GetEntry(iEnt);
+            isFake = treeTrackParams->GetLeaf("fake")->GetValue(0);
+            if (isFake)
+            {
+                int nFakes = treeTrackParams->GetLeaf("nFakeClusters")->GetValue(0);
+                histNFakeClusters->Fill(nFakes);
+                for (auto iLayer{0}; iLayer < 7; ++iLayer)
+                {
+                    int cluLabel = treeTrackParams->GetLeaf(Form("clu%dLabel", iLayer))->GetValue(0);
+                    if (!cluLabel)
+                    {
+                        clusterFakeStacker[nFakes - 1]->Fill(iLayer);
+                    }
+                }
+            }
+        }
+        auto trackParamsCanvas = new TCanvas("clusterInfo", "clusterInfo", cx, cy / 2);
+        trackParamsCanvas->Divide(2);
+        trackParamsCanvas->cd(1);
+        gPad->SetLogy();
+        gPad->SetGridx();
+        histNFakeClusters->Draw();
+        trackParamsCanvas->cd(2);
+        // gPad->SetLogy();
+        stackClusters->Draw();
+        gPad->Modified();
+        gPad->Update();
+        trackParamsCanvas->SaveAs("clustersCanvas.pdf");
+    }
+    // treeSmoothingParams
+    if (lvl > 0)
+    {
+        for (auto iSmoothHist{0}; iSmoothHist < (int)histSmoothChi2Valid.size(); ++iSmoothHist)
+        {
+            histSmoothChi2Valid[iSmoothHist] = new TH1F(Form("histLayer%dvalid", iSmoothHist + 2), Form("Smoother #chi^{2} Layer %d;#chi^{2}_{Smoother}", iSmoothHist + 2), nBins, minchi, maxChiSmoother[iSmoothHist]);
+            histSmoothChi2Valid[iSmoothHist]->SetLineColor(kBlue);
+            histSmoothChi2Fake[iSmoothHist] = new TH1F(Form("histLayer%dfake", iSmoothHist + 2), Form("Smoother #chi^{2} Layer %d;#chi^{2}_{Smoother}", iSmoothHist + 2), nBins, minchi, maxChiSmoother[iSmoothHist]);
+            histSmoothChi2Fake[iSmoothHist]->SetLineColor(kRed);
+        }
+
+        for (auto iEntry{0}; iEntry < treeSmoothingParams->GetEntriesFast(); ++iEntry)
+        {
+            treeSmoothingParams->GetEntry(iEntry);
+            int layer = treeSmoothingParams->GetLeaf("layer")->GetValue(0);
+            float schi2 = treeSmoothingParams->GetLeaf("schi2")->GetValue(0);
+            bool fake = treeSmoothingParams->GetLeaf("fake")->GetValue(0);
+            if (fake)
+            {
+                histSmoothChi2Fake[layer - 2]->Fill(schi2);
+            }
+            else
+            {
+                histSmoothChi2Valid[layer - 2]->Fill(schi2);
+            }
+        }
+
+        for (auto iCanvas{0}; iCanvas < 3; ++iCanvas)
+        {
+            smoothCanvas[iCanvas] = new TCanvas(Form("canvasSmoothLayer%d", iCanvas + 2), Form("canvasSmoothLayer%d", iCanvas), cx, cy);
+            smoothCanvas[iCanvas]->cd();
+            gPad->SetLogy();
+            histSmoothChi2Valid[iCanvas]->Scale(1. / histSmoothChi2Valid[iCanvas]->GetEntries());
+            histSmoothChi2Fake[iCanvas]->Scale(1. / histSmoothChi2Fake[iCanvas]->GetEntries());
+            histSmoothChi2Valid[iCanvas]->Draw("hist");
+            histSmoothChi2Fake[iCanvas]->Draw("hist same");
+            gPad->Modified();
+            gPad->Update();
+
+            smoothCanvas[iCanvas]->SaveAs(Form("SmootherChi2Layer%d", iCanvas + 2), "r");
+        }
+    }
+    if (lvl > 2)
+    {
+        for (auto iFit{0}; iFit < 3; ++iFit)
+        {
+            for (auto iLayer{0}; iLayer < 7; ++iLayer)
+            {
+
+                histChi2Valid[iFit][iLayer] = new TH1F(Form("histSumChiValidLayer%d_%d", iLayer, iFit), Form("Layer %d;#chi^{2}/n_{c}", iLayer), nBins, minchi, maxchi[iFit][iLayer]); //
+                histChi2Valid[iFit][iLayer]->SetLineColor(kBlue);
+                histChi2Fake[iFit][iLayer] = new TH1F(Form("histSumChiFakeLayer%d_%d", iLayer, iFit), Form("Layer %d;#chi^{2}/n_{c}", iLayer), nBins, minchi, maxchi[iFit][iLayer]); //
+                histChi2Fake[iFit][iLayer]->SetLineColor(kRed);
+            }
+        }
+
+        float prChi2, inChi2;
+        for (auto iFit{0}; iFit < 3; ++iFit)
+        {
+            for (auto iEnt{0}; iEnt < fitTreesInfo[iFit]->GetEntriesFast(); ++iEnt)
+            {
+                fitTreesInfo[iFit]->GetEntry(iEnt);
+                isFake = fitTreesInfo[iFit]->GetLeaf("fake")->GetValue(0);
+                for (auto iLayer{0}; iLayer < 7; ++iLayer)
+                {
+                    prChi2 = fitTreesInfo[iFit]->GetLeaf(Form("Layer%dchi2", iLayer))->GetValue(0);
+                    inChi2 = fitTreesInfo[iFit]->GetLeaf(Form("Layer%dInChi2", iLayer))->GetValue(0);
+                    if (!isFake)
+                    {
+                        histChi2Valid[iFit][iLayer]->Fill((prChi2 + inChi2) / (iLayer + 1));
+                    }
+                    else
+                    {
+                        histChi2Fake[iFit][iLayer]->Fill((prChi2 + inChi2) / (iLayer + 1));
+                    }
+                }
+            }
+
+            fitCanvas[iFit] = new TCanvas(Form("Chi2_fit%d", iFit), Form("Chi2_fit%d", iFit), cx, cy);
+            fitCanvas[iFit]->Divide(2, 4);
+            for (auto iHist{0}; iHist < 7; ++iHist)
+            {
+                fitCanvas[iFit]->cd(iHist + 1);
+                gPad->SetLogy();
+                histChi2Valid[iFit][iHist]->Scale(1. / (histChi2Fake[iFit][iHist]->GetEntries() + histChi2Valid[iFit][iHist]->GetEntries()));
+                histChi2Fake[iFit][iHist]->Scale(1. / (histChi2Fake[iFit][iHist]->GetEntries() + histChi2Valid[iFit][iHist]->GetEntries()));
+                histChi2Valid[iFit][iHist]->Draw("hist");
+                histChi2Fake[iFit][iHist]->Draw("same hist");
+            }
+            fitCanvas[iFit]->SaveAs(Form("chiSquare_Fit%d.pdf", iFit), "r");
+        }
+    }
 }
