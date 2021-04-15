@@ -14,7 +14,7 @@ const float dzmin{-5.f};
 const float dzmax{5.f};
 const float minchi{0};
 const float maxchi{2e3};
-const int nBins{300};
+const int nBins{100};
 const int cx{2000};
 const int cy{1500};
 const float minpt{0.};
